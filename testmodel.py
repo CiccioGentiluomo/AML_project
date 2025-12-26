@@ -1,7 +1,7 @@
 from ultralytics import YOLO
 
 # 1. Carica il tuo modello appena addestrato
-model = YOLO('datasets/linemod/linemod_yolo_format/runs/detect/linemod_yolo_run3/weights/best.pt')
+model = YOLO('runs/detect/linemod_yolo_run/weights/best.pt')
 
 # 2. Esegui la predizione su un'immagine (sostituisci con il percorso di una tua immagine)
 # Se non hai un'immagine pronta, YOLO ne userà una di esempio o puoi scaricarne una

@@ -1,5 +1,8 @@
 # To start the project for the first time
 
+## download pytorch manually
+`pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu130`
+
 ## download requirements
 `pip install -r requirements.txt`
 

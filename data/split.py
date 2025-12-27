@@ -6,7 +6,10 @@ import matplotlib.patches as patches
 import numpy as np
 from PIL import Image
 from sklearn.model_selection import train_test_split
-from linemod_dataset import LineModDataset
+try:
+    from .linemod_dataset import LineModDataset
+except ImportError:
+    from linemod_dataset import LineModDataset  # fallback when running as script
 
 def prepare_data_and_splits(dataset_root, test_size=0.2, random_seed=42):
     all_samples = [] 
@@ -82,6 +85,11 @@ if __name__ == "__main__":
     train_samples, val_samples, gt_cache = prepare_data_and_splits(ROOT)
     
     train_set = LineModDataset(ROOT, train_samples, gt_cache)
+
+    #verifico dimensioni campione dataset in pixels
+    sample_img = train_set[0]['rgb']
+    print(f"Dimensione immagine campione nel dataset: {sample_img.shape[1]}x{sample_img.shape[2]} pixels")
+    
     
     # Proviamo a visualizzare specificamente la morsa (ID 02)
     print("📸 Cerco un esempio della morsa (ID 2)...")

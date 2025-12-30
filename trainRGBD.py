@@ -14,9 +14,10 @@ from utils.add_loss import ADDLoss
 from data.split import prepare_data_and_splits
 
 def log_and_print(message, log_file):
-    """Stampa a video e scrive nel file di log."""
+    """Stampa a video e scrive nel file di log con supporto UTF-8."""
     print(message)
-    with open(log_file, "a") as f:
+    # Aggiungiamo encoding="utf-8" per evitare UnicodeEncodeError su Windows
+    with open(log_file, "a", encoding="utf-8") as f:
         f.write(message + "\n")
 
 def load_info_cache(dataset_root, object_ids):

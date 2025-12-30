@@ -1,0 +1,922 @@
+
+--- Epoch 1 Summary ---
+Avg Train ADD Loss: 0.157060 m
+Avg Val ADD Loss:   0.098853 m
+ Object 01: 104.53 mm
+ Object 02: 144.19 mm
+ Object 04: 105.89 mm
+ Object 05: 115.16 mm
+ Object 06: 96.20 mm
+ Object 08: 108.32 mm
+ Object 09: 101.59 mm
+ Object 10: 39.80 mm
+ Object 11: 51.05 mm
+ Object 12: 95.33 mm
+ Object 13: 125.00 mm
+ Object 14: 104.52 mm
+ Object 15: 104.27 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 2 Summary ---
+Avg Train ADD Loss: 0.125468 m
+Avg Val ADD Loss:   0.085286 m
+ Object 01: 87.88 mm
+ Object 02: 126.09 mm
+ Object 04: 95.36 mm
+ Object 05: 89.89 mm
+ Object 06: 82.77 mm
+ Object 08: 92.56 mm
+ Object 09: 92.75 mm
+ Object 10: 32.35 mm
+ Object 11: 44.24 mm
+ Object 12: 93.00 mm
+ Object 13: 100.89 mm
+ Object 14: 91.81 mm
+ Object 15: 88.39 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 3 Summary ---
+Avg Train ADD Loss: 0.113510 m
+Avg Val ADD Loss:   0.106438 m
+ Object 01: 117.92 mm
+ Object 02: 143.17 mm
+ Object 04: 109.38 mm
+ Object 05: 106.68 mm
+ Object 06: 114.08 mm
+ Object 08: 108.33 mm
+ Object 09: 122.59 mm
+ Object 10: 52.45 mm
+ Object 11: 62.77 mm
+ Object 12: 118.26 mm
+ Object 13: 124.12 mm
+ Object 14: 109.32 mm
+ Object 15: 102.15 mm
+----------------------------------------
+
+--- Epoch 4 Summary ---
+Avg Train ADD Loss: 0.104839 m
+Avg Val ADD Loss:   0.078426 m
+ Object 01: 87.51 mm
+ Object 02: 105.95 mm
+ Object 04: 82.74 mm
+ Object 05: 84.53 mm
+ Object 06: 84.09 mm
+ Object 08: 87.08 mm
+ Object 09: 87.92 mm
+ Object 10: 25.86 mm
+ Object 11: 34.77 mm
+ Object 12: 83.79 mm
+ Object 13: 99.81 mm
+ Object 14: 83.35 mm
+ Object 15: 80.08 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 5 Summary ---
+Avg Train ADD Loss: 0.099344 m
+Avg Val ADD Loss:   0.077197 m
+ Object 01: 82.43 mm
+ Object 02: 101.79 mm
+ Object 04: 81.58 mm
+ Object 05: 80.94 mm
+ Object 06: 81.55 mm
+ Object 08: 84.43 mm
+ Object 09: 89.26 mm
+ Object 10: 25.87 mm
+ Object 11: 39.15 mm
+ Object 12: 85.30 mm
+ Object 13: 97.43 mm
+ Object 14: 81.47 mm
+ Object 15: 79.55 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 6 Summary ---
+Avg Train ADD Loss: 0.094579 m
+Avg Val ADD Loss:   0.076378 m
+ Object 01: 82.76 mm
+ Object 02: 104.18 mm
+ Object 04: 82.65 mm
+ Object 05: 80.82 mm
+ Object 06: 80.31 mm
+ Object 08: 88.50 mm
+ Object 09: 83.25 mm
+ Object 10: 26.45 mm
+ Object 11: 38.29 mm
+ Object 12: 82.38 mm
+ Object 13: 90.96 mm
+ Object 14: 81.74 mm
+ Object 15: 78.48 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 7 Summary ---
+Avg Train ADD Loss: 0.091930 m
+Avg Val ADD Loss:   0.070506 m
+ Object 01: 78.19 mm
+ Object 02: 93.08 mm
+ Object 04: 75.51 mm
+ Object 05: 75.21 mm
+ Object 06: 78.93 mm
+ Object 08: 76.23 mm
+ Object 09: 79.18 mm
+ Object 10: 22.21 mm
+ Object 11: 32.30 mm
+ Object 12: 77.83 mm
+ Object 13: 85.67 mm
+ Object 14: 74.56 mm
+ Object 15: 74.71 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 8 Summary ---
+Avg Train ADD Loss: 0.089935 m
+Avg Val ADD Loss:   0.065983 m
+ Object 01: 81.21 mm
+ Object 02: 93.10 mm
+ Object 04: 67.36 mm
+ Object 05: 69.96 mm
+ Object 06: 70.68 mm
+ Object 08: 71.10 mm
+ Object 09: 74.81 mm
+ Object 10: 20.00 mm
+ Object 11: 27.67 mm
+ Object 12: 72.10 mm
+ Object 13: 80.15 mm
+ Object 14: 69.14 mm
+ Object 15: 67.31 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 9 Summary ---
+Avg Train ADD Loss: 0.085954 m
+Avg Val ADD Loss:   0.072452 m
+ Object 01: 84.11 mm
+ Object 02: 94.44 mm
+ Object 04: 72.70 mm
+ Object 05: 77.91 mm
+ Object 06: 80.35 mm
+ Object 08: 75.57 mm
+ Object 09: 83.38 mm
+ Object 10: 25.13 mm
+ Object 11: 45.25 mm
+ Object 12: 77.46 mm
+ Object 13: 81.05 mm
+ Object 14: 73.19 mm
+ Object 15: 76.90 mm
+----------------------------------------
+
+--- Epoch 10 Summary ---
+Avg Train ADD Loss: 0.084644 m
+Avg Val ADD Loss:   0.068186 m
+ Object 01: 78.09 mm
+ Object 02: 97.45 mm
+ Object 04: 72.67 mm
+ Object 05: 71.44 mm
+ Object 06: 71.99 mm
+ Object 08: 75.87 mm
+ Object 09: 81.34 mm
+ Object 10: 19.25 mm
+ Object 11: 32.94 mm
+ Object 12: 74.41 mm
+ Object 13: 75.32 mm
+ Object 14: 70.19 mm
+ Object 15: 72.15 mm
+----------------------------------------
+
+--- Epoch 11 Summary ---
+Avg Train ADD Loss: 0.081780 m
+Avg Val ADD Loss:   0.061233 m
+ Object 01: 78.45 mm
+ Object 02: 90.14 mm
+ Object 04: 60.78 mm
+ Object 05: 63.95 mm
+ Object 06: 65.96 mm
+ Object 08: 63.56 mm
+ Object 09: 72.23 mm
+ Object 10: 20.09 mm
+ Object 11: 26.29 mm
+ Object 12: 66.53 mm
+ Object 13: 69.05 mm
+ Object 14: 61.69 mm
+ Object 15: 63.20 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 12 Summary ---
+Avg Train ADD Loss: 0.079899 m
+Avg Val ADD Loss:   0.059300 m
+ Object 01: 73.53 mm
+ Object 02: 90.24 mm
+ Object 04: 56.95 mm
+ Object 05: 61.39 mm
+ Object 06: 67.79 mm
+ Object 08: 61.84 mm
+ Object 09: 70.43 mm
+ Object 10: 19.62 mm
+ Object 11: 24.76 mm
+ Object 12: 63.87 mm
+ Object 13: 66.42 mm
+ Object 14: 60.47 mm
+ Object 15: 59.40 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 13 Summary ---
+Avg Train ADD Loss: 0.078078 m
+Avg Val ADD Loss:   0.058559 m
+ Object 01: 77.04 mm
+ Object 02: 82.86 mm
+ Object 04: 58.88 mm
+ Object 05: 60.08 mm
+ Object 06: 66.41 mm
+ Object 08: 63.78 mm
+ Object 09: 70.28 mm
+ Object 10: 19.46 mm
+ Object 11: 24.95 mm
+ Object 12: 64.10 mm
+ Object 13: 64.32 mm
+ Object 14: 57.03 mm
+ Object 15: 57.13 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 14 Summary ---
+Avg Train ADD Loss: 0.075484 m
+Avg Val ADD Loss:   0.058690 m
+ Object 01: 76.32 mm
+ Object 02: 84.39 mm
+ Object 04: 54.17 mm
+ Object 05: 60.48 mm
+ Object 06: 64.32 mm
+ Object 08: 60.23 mm
+ Object 09: 73.35 mm
+ Object 10: 20.11 mm
+ Object 11: 27.38 mm
+ Object 12: 65.29 mm
+ Object 13: 66.31 mm
+ Object 14: 57.03 mm
+ Object 15: 58.21 mm
+----------------------------------------
+
+--- Epoch 15 Summary ---
+Avg Train ADD Loss: 0.074333 m
+Avg Val ADD Loss:   0.062700 m
+ Object 01: 76.89 mm
+ Object 02: 85.95 mm
+ Object 04: 60.81 mm
+ Object 05: 65.49 mm
+ Object 06: 67.70 mm
+ Object 08: 67.92 mm
+ Object 09: 74.97 mm
+ Object 10: 21.00 mm
+ Object 11: 29.66 mm
+ Object 12: 68.80 mm
+ Object 13: 75.10 mm
+ Object 14: 62.36 mm
+ Object 15: 63.93 mm
+----------------------------------------
+
+--- Epoch 16 Summary ---
+Avg Train ADD Loss: 0.074273 m
+Avg Val ADD Loss:   0.061365 m
+ Object 01: 74.03 mm
+ Object 02: 84.32 mm
+ Object 04: 58.68 mm
+ Object 05: 62.65 mm
+ Object 06: 68.40 mm
+ Object 08: 67.61 mm
+ Object 09: 72.48 mm
+ Object 10: 19.80 mm
+ Object 11: 31.06 mm
+ Object 12: 69.85 mm
+ Object 13: 69.15 mm
+ Object 14: 60.38 mm
+ Object 15: 64.90 mm
+----------------------------------------
+
+--- Epoch 17 Summary ---
+Avg Train ADD Loss: 0.072761 m
+Avg Val ADD Loss:   0.068926 m
+ Object 01: 83.17 mm
+ Object 02: 89.23 mm
+ Object 04: 65.24 mm
+ Object 05: 71.37 mm
+ Object 06: 80.01 mm
+ Object 08: 69.87 mm
+ Object 09: 85.77 mm
+ Object 10: 27.54 mm
+ Object 11: 37.60 mm
+ Object 12: 71.66 mm
+ Object 13: 79.78 mm
+ Object 14: 69.49 mm
+ Object 15: 69.63 mm
+----------------------------------------
+
+--- Epoch 18 Summary ---
+Avg Train ADD Loss: 0.071954 m
+Avg Val ADD Loss:   0.060651 m
+ Object 01: 82.82 mm
+ Object 02: 84.73 mm
+ Object 04: 61.37 mm
+ Object 05: 61.61 mm
+ Object 06: 69.56 mm
+ Object 08: 63.61 mm
+ Object 09: 71.93 mm
+ Object 10: 18.74 mm
+ Object 11: 34.43 mm
+ Object 12: 63.94 mm
+ Object 13: 64.18 mm
+ Object 14: 57.56 mm
+ Object 15: 58.62 mm
+----------------------------------------
+
+--- Epoch 19 Summary ---
+Avg Train ADD Loss: 0.071958 m
+Avg Val ADD Loss:   0.057512 m
+ Object 01: 73.66 mm
+ Object 02: 86.86 mm
+ Object 04: 55.36 mm
+ Object 05: 60.59 mm
+ Object 06: 63.81 mm
+ Object 08: 58.93 mm
+ Object 09: 70.78 mm
+ Object 10: 18.78 mm
+ Object 11: 25.46 mm
+ Object 12: 61.37 mm
+ Object 13: 65.12 mm
+ Object 14: 55.55 mm
+ Object 15: 56.42 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 20 Summary ---
+Avg Train ADD Loss: 0.070839 m
+Avg Val ADD Loss:   0.057467 m
+ Object 01: 76.12 mm
+ Object 02: 88.58 mm
+ Object 04: 53.56 mm
+ Object 05: 60.95 mm
+ Object 06: 64.19 mm
+ Object 08: 61.47 mm
+ Object 09: 68.58 mm
+ Object 10: 19.88 mm
+ Object 11: 24.26 mm
+ Object 12: 58.98 mm
+ Object 13: 63.75 mm
+ Object 14: 57.09 mm
+ Object 15: 54.93 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 21 Summary ---
+Avg Train ADD Loss: 0.070396 m
+Avg Val ADD Loss:   0.056584 m
+ Object 01: 74.26 mm
+ Object 02: 80.28 mm
+ Object 04: 53.75 mm
+ Object 05: 58.20 mm
+ Object 06: 62.81 mm
+ Object 08: 62.46 mm
+ Object 09: 71.60 mm
+ Object 10: 18.74 mm
+ Object 11: 24.68 mm
+ Object 12: 59.48 mm
+ Object 13: 65.72 mm
+ Object 14: 52.94 mm
+ Object 15: 55.17 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 22 Summary ---
+Avg Train ADD Loss: 0.069189 m
+Avg Val ADD Loss:   0.054815 m
+ Object 01: 73.05 mm
+ Object 02: 82.52 mm
+ Object 04: 54.04 mm
+ Object 05: 55.04 mm
+ Object 06: 60.36 mm
+ Object 08: 58.22 mm
+ Object 09: 67.53 mm
+ Object 10: 17.17 mm
+ Object 11: 23.49 mm
+ Object 12: 58.93 mm
+ Object 13: 62.67 mm
+ Object 14: 51.24 mm
+ Object 15: 53.35 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 23 Summary ---
+Avg Train ADD Loss: 0.067867 m
+Avg Val ADD Loss:   0.054569 m
+ Object 01: 73.07 mm
+ Object 02: 83.61 mm
+ Object 04: 52.43 mm
+ Object 05: 55.11 mm
+ Object 06: 60.19 mm
+ Object 08: 55.39 mm
+ Object 09: 68.42 mm
+ Object 10: 18.48 mm
+ Object 11: 25.54 mm
+ Object 12: 56.78 mm
+ Object 13: 60.33 mm
+ Object 14: 50.46 mm
+ Object 15: 54.19 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 24 Summary ---
+Avg Train ADD Loss: 0.067498 m
+Avg Val ADD Loss:   0.052421 m
+ Object 01: 71.14 mm
+ Object 02: 77.97 mm
+ Object 04: 49.15 mm
+ Object 05: 52.36 mm
+ Object 06: 58.24 mm
+ Object 08: 53.79 mm
+ Object 09: 66.13 mm
+ Object 10: 16.09 mm
+ Object 11: 23.17 mm
+ Object 12: 55.33 mm
+ Object 13: 61.06 mm
+ Object 14: 51.97 mm
+ Object 15: 49.45 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 25 Summary ---
+Avg Train ADD Loss: 0.066932 m
+Avg Val ADD Loss:   0.062511 m
+ Object 01: 72.56 mm
+ Object 02: 84.36 mm
+ Object 04: 66.08 mm
+ Object 05: 69.31 mm
+ Object 06: 61.61 mm
+ Object 08: 74.47 mm
+ Object 09: 67.10 mm
+ Object 10: 20.26 mm
+ Object 11: 32.88 mm
+ Object 12: 62.06 mm
+ Object 13: 67.67 mm
+ Object 14: 69.78 mm
+ Object 15: 71.00 mm
+----------------------------------------
+
+--- Epoch 26 Summary ---
+Avg Train ADD Loss: 0.065866 m
+Avg Val ADD Loss:   0.055627 m
+ Object 01: 71.15 mm
+ Object 02: 80.55 mm
+ Object 04: 51.99 mm
+ Object 05: 55.24 mm
+ Object 06: 62.29 mm
+ Object 08: 57.33 mm
+ Object 09: 74.51 mm
+ Object 10: 18.83 mm
+ Object 11: 26.14 mm
+ Object 12: 59.10 mm
+ Object 13: 62.15 mm
+ Object 14: 50.90 mm
+ Object 15: 57.00 mm
+----------------------------------------
+
+--- Epoch 27 Summary ---
+Avg Train ADD Loss: 0.065967 m
+Avg Val ADD Loss:   0.057685 m
+ Object 01: 76.49 mm
+ Object 02: 88.35 mm
+ Object 04: 55.02 mm
+ Object 05: 57.96 mm
+ Object 06: 66.05 mm
+ Object 08: 60.33 mm
+ Object 09: 69.81 mm
+ Object 10: 21.76 mm
+ Object 11: 24.81 mm
+ Object 12: 59.95 mm
+ Object 13: 62.82 mm
+ Object 14: 55.70 mm
+ Object 15: 55.93 mm
+----------------------------------------
+
+--- Epoch 28 Summary ---
+Avg Train ADD Loss: 0.064441 m
+Avg Val ADD Loss:   0.053695 m
+ Object 01: 68.09 mm
+ Object 02: 83.16 mm
+ Object 04: 51.49 mm
+ Object 05: 55.71 mm
+ Object 06: 59.22 mm
+ Object 08: 54.76 mm
+ Object 09: 68.26 mm
+ Object 10: 19.31 mm
+ Object 11: 22.71 mm
+ Object 12: 57.80 mm
+ Object 13: 61.09 mm
+ Object 14: 49.46 mm
+ Object 15: 51.48 mm
+----------------------------------------
+
+--- Epoch 29 Summary ---
+Avg Train ADD Loss: 0.064460 m
+Avg Val ADD Loss:   0.062170 m
+ Object 01: 73.47 mm
+ Object 02: 82.58 mm
+ Object 04: 76.01 mm
+ Object 05: 65.97 mm
+ Object 06: 64.02 mm
+ Object 08: 63.99 mm
+ Object 09: 69.83 mm
+ Object 10: 17.75 mm
+ Object 11: 30.88 mm
+ Object 12: 64.20 mm
+ Object 13: 74.17 mm
+ Object 14: 65.11 mm
+ Object 15: 66.35 mm
+----------------------------------------
+
+--- Epoch 30 Summary ---
+Avg Train ADD Loss: 0.063305 m
+Avg Val ADD Loss:   0.054102 m
+ Object 01: 73.08 mm
+ Object 02: 76.34 mm
+ Object 04: 51.67 mm
+ Object 05: 56.32 mm
+ Object 06: 59.04 mm
+ Object 08: 56.16 mm
+ Object 09: 67.64 mm
+ Object 10: 17.43 mm
+ Object 11: 24.31 mm
+ Object 12: 57.89 mm
+ Object 13: 64.53 mm
+ Object 14: 49.93 mm
+ Object 15: 53.26 mm
+----------------------------------------
+
+--- Epoch 31 Summary ---
+Avg Train ADD Loss: 0.060205 m
+Avg Val ADD Loss:   0.052362 m
+ Object 01: 70.10 mm
+ Object 02: 75.54 mm
+ Object 04: 51.54 mm
+ Object 05: 54.98 mm
+ Object 06: 57.49 mm
+ Object 08: 54.68 mm
+ Object 09: 65.60 mm
+ Object 10: 15.79 mm
+ Object 11: 21.55 mm
+ Object 12: 55.92 mm
+ Object 13: 62.60 mm
+ Object 14: 49.50 mm
+ Object 15: 49.78 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 32 Summary ---
+Avg Train ADD Loss: 0.059262 m
+Avg Val ADD Loss:   0.052643 m
+ Object 01: 68.48 mm
+ Object 02: 74.61 mm
+ Object 04: 54.14 mm
+ Object 05: 53.43 mm
+ Object 06: 57.35 mm
+ Object 08: 54.80 mm
+ Object 09: 66.72 mm
+ Object 10: 16.24 mm
+ Object 11: 23.30 mm
+ Object 12: 56.95 mm
+ Object 13: 59.17 mm
+ Object 14: 50.20 mm
+ Object 15: 53.30 mm
+----------------------------------------
+
+--- Epoch 33 Summary ---
+Avg Train ADD Loss: 0.059313 m
+Avg Val ADD Loss:   0.049329 m
+ Object 01: 68.21 mm
+ Object 02: 73.04 mm
+ Object 04: 46.67 mm
+ Object 05: 49.96 mm
+ Object 06: 56.15 mm
+ Object 08: 50.51 mm
+ Object 09: 62.74 mm
+ Object 10: 15.33 mm
+ Object 11: 20.22 mm
+ Object 12: 52.57 mm
+ Object 13: 57.69 mm
+ Object 14: 45.82 mm
+ Object 15: 46.37 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 34 Summary ---
+Avg Train ADD Loss: 0.058120 m
+Avg Val ADD Loss:   0.051094 m
+ Object 01: 68.30 mm
+ Object 02: 74.42 mm
+ Object 04: 49.54 mm
+ Object 05: 51.77 mm
+ Object 06: 58.07 mm
+ Object 08: 53.45 mm
+ Object 09: 63.37 mm
+ Object 10: 15.75 mm
+ Object 11: 21.08 mm
+ Object 12: 55.06 mm
+ Object 13: 60.71 mm
+ Object 14: 48.05 mm
+ Object 15: 49.14 mm
+----------------------------------------
+
+--- Epoch 35 Summary ---
+Avg Train ADD Loss: 0.057770 m
+Avg Val ADD Loss:   0.049618 m
+ Object 01: 66.95 mm
+ Object 02: 74.53 mm
+ Object 04: 46.07 mm
+ Object 05: 50.29 mm
+ Object 06: 56.58 mm
+ Object 08: 50.41 mm
+ Object 09: 62.50 mm
+ Object 10: 16.11 mm
+ Object 11: 21.58 mm
+ Object 12: 53.76 mm
+ Object 13: 55.90 mm
+ Object 14: 47.30 mm
+ Object 15: 47.11 mm
+----------------------------------------
+
+--- Epoch 36 Summary ---
+Avg Train ADD Loss: 0.057480 m
+Avg Val ADD Loss:   0.049948 m
+ Object 01: 65.26 mm
+ Object 02: 72.54 mm
+ Object 04: 48.64 mm
+ Object 05: 51.86 mm
+ Object 06: 57.05 mm
+ Object 08: 51.79 mm
+ Object 09: 63.99 mm
+ Object 10: 16.06 mm
+ Object 11: 21.34 mm
+ Object 12: 54.06 mm
+ Object 13: 56.51 mm
+ Object 14: 46.71 mm
+ Object 15: 47.36 mm
+----------------------------------------
+
+--- Epoch 37 Summary ---
+Avg Train ADD Loss: 0.057007 m
+Avg Val ADD Loss:   0.050257 m
+ Object 01: 68.45 mm
+ Object 02: 74.62 mm
+ Object 04: 47.85 mm
+ Object 05: 51.16 mm
+ Object 06: 55.60 mm
+ Object 08: 52.62 mm
+ Object 09: 63.25 mm
+ Object 10: 16.25 mm
+ Object 11: 21.30 mm
+ Object 12: 53.46 mm
+ Object 13: 57.57 mm
+ Object 14: 47.80 mm
+ Object 15: 47.54 mm
+----------------------------------------
+
+--- Epoch 38 Summary ---
+Avg Train ADD Loss: 0.056728 m
+Avg Val ADD Loss:   0.048998 m
+ Object 01: 66.05 mm
+ Object 02: 72.71 mm
+ Object 04: 47.66 mm
+ Object 05: 50.85 mm
+ Object 06: 55.07 mm
+ Object 08: 49.40 mm
+ Object 09: 61.13 mm
+ Object 10: 15.69 mm
+ Object 11: 19.86 mm
+ Object 12: 53.51 mm
+ Object 13: 55.69 mm
+ Object 14: 46.00 mm
+ Object 15: 47.48 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 39 Summary ---
+Avg Train ADD Loss: 0.057082 m
+Avg Val ADD Loss:   0.049812 m
+ Object 01: 66.19 mm
+ Object 02: 70.48 mm
+ Object 04: 48.52 mm
+ Object 05: 51.34 mm
+ Object 06: 57.23 mm
+ Object 08: 50.80 mm
+ Object 09: 62.19 mm
+ Object 10: 16.25 mm
+ Object 11: 21.39 mm
+ Object 12: 54.12 mm
+ Object 13: 56.60 mm
+ Object 14: 47.34 mm
+ Object 15: 49.09 mm
+----------------------------------------
+
+--- Epoch 40 Summary ---
+Avg Train ADD Loss: 0.056335 m
+Avg Val ADD Loss:   0.050721 m
+ Object 01: 68.05 mm
+ Object 02: 74.55 mm
+ Object 04: 51.05 mm
+ Object 05: 51.36 mm
+ Object 06: 58.26 mm
+ Object 08: 50.61 mm
+ Object 09: 64.61 mm
+ Object 10: 16.30 mm
+ Object 11: 19.90 mm
+ Object 12: 55.32 mm
+ Object 13: 58.13 mm
+ Object 14: 46.10 mm
+ Object 15: 49.32 mm
+----------------------------------------
+
+--- Epoch 41 Summary ---
+Avg Train ADD Loss: 0.055636 m
+Avg Val ADD Loss:   0.053114 m
+ Object 01: 66.90 mm
+ Object 02: 74.00 mm
+ Object 04: 53.60 mm
+ Object 05: 55.40 mm
+ Object 06: 59.01 mm
+ Object 08: 55.82 mm
+ Object 09: 65.24 mm
+ Object 10: 17.00 mm
+ Object 11: 24.79 mm
+ Object 12: 57.09 mm
+ Object 13: 60.34 mm
+ Object 14: 51.72 mm
+ Object 15: 53.98 mm
+----------------------------------------
+
+--- Epoch 42 Summary ---
+Avg Train ADD Loss: 0.055715 m
+Avg Val ADD Loss:   0.050741 m
+ Object 01: 67.59 mm
+ Object 02: 71.65 mm
+ Object 04: 51.57 mm
+ Object 05: 51.66 mm
+ Object 06: 56.43 mm
+ Object 08: 52.86 mm
+ Object 09: 61.71 mm
+ Object 10: 16.47 mm
+ Object 11: 22.17 mm
+ Object 12: 54.18 mm
+ Object 13: 57.13 mm
+ Object 14: 49.36 mm
+ Object 15: 51.20 mm
+----------------------------------------
+
+--- Epoch 43 Summary ---
+Avg Train ADD Loss: 0.055117 m
+Avg Val ADD Loss:   0.050617 m
+ Object 01: 67.40 mm
+ Object 02: 72.10 mm
+ Object 04: 47.78 mm
+ Object 05: 52.84 mm
+ Object 06: 58.75 mm
+ Object 08: 53.06 mm
+ Object 09: 63.22 mm
+ Object 10: 15.65 mm
+ Object 11: 20.09 mm
+ Object 12: 54.12 mm
+ Object 13: 60.05 mm
+ Object 14: 47.14 mm
+ Object 15: 50.12 mm
+----------------------------------------
+
+--- Epoch 44 Summary ---
+Avg Train ADD Loss: 0.054807 m
+Avg Val ADD Loss:   0.051789 m
+ Object 01: 68.44 mm
+ Object 02: 74.82 mm
+ Object 04: 51.68 mm
+ Object 05: 53.43 mm
+ Object 06: 59.61 mm
+ Object 08: 52.42 mm
+ Object 09: 63.75 mm
+ Object 10: 16.23 mm
+ Object 11: 22.40 mm
+ Object 12: 56.38 mm
+ Object 13: 59.51 mm
+ Object 14: 48.27 mm
+ Object 15: 50.69 mm
+----------------------------------------
+
+--- Epoch 45 Summary ---
+Avg Train ADD Loss: 0.053247 m
+Avg Val ADD Loss:   0.049388 m
+ Object 01: 68.27 mm
+ Object 02: 72.74 mm
+ Object 04: 46.90 mm
+ Object 05: 49.37 mm
+ Object 06: 54.30 mm
+ Object 08: 50.80 mm
+ Object 09: 63.19 mm
+ Object 10: 15.54 mm
+ Object 11: 20.51 mm
+ Object 12: 53.34 mm
+ Object 13: 56.73 mm
+ Object 14: 46.17 mm
+ Object 15: 48.23 mm
+----------------------------------------
+
+--- Epoch 46 Summary ---
+Avg Train ADD Loss: 0.053101 m
+Avg Val ADD Loss:   0.048529 m
+ Object 01: 67.44 mm
+ Object 02: 70.46 mm
+ Object 04: 46.34 mm
+ Object 05: 48.95 mm
+ Object 06: 56.52 mm
+ Object 08: 48.87 mm
+ Object 09: 62.83 mm
+ Object 10: 15.91 mm
+ Object 11: 19.29 mm
+ Object 12: 52.60 mm
+ Object 13: 55.03 mm
+ Object 14: 44.25 mm
+ Object 15: 46.04 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 47 Summary ---
+Avg Train ADD Loss: 0.052432 m
+Avg Val ADD Loss:   0.048485 m
+ Object 01: 66.66 mm
+ Object 02: 70.40 mm
+ Object 04: 46.09 mm
+ Object 05: 49.57 mm
+ Object 06: 54.58 mm
+ Object 08: 49.83 mm
+ Object 09: 61.30 mm
+ Object 10: 15.53 mm
+ Object 11: 20.27 mm
+ Object 12: 52.47 mm
+ Object 13: 55.86 mm
+ Object 14: 44.93 mm
+ Object 15: 46.72 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 48 Summary ---
+Avg Train ADD Loss: 0.052466 m
+Avg Val ADD Loss:   0.047943 m
+ Object 01: 65.96 mm
+ Object 02: 71.49 mm
+ Object 04: 47.02 mm
+ Object 05: 48.18 mm
+ Object 06: 54.88 mm
+ Object 08: 48.28 mm
+ Object 09: 60.53 mm
+ Object 10: 15.62 mm
+ Object 11: 18.91 mm
+ Object 12: 52.21 mm
+ Object 13: 55.14 mm
+ Object 14: 43.87 mm
+ Object 15: 45.18 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 49 Summary ---
+Avg Train ADD Loss: 0.051679 m
+Avg Val ADD Loss:   0.048650 m
+ Object 01: 66.40 mm
+ Object 02: 70.82 mm
+ Object 04: 46.36 mm
+ Object 05: 49.30 mm
+ Object 06: 55.20 mm
+ Object 08: 50.59 mm
+ Object 09: 61.84 mm
+ Object 10: 15.49 mm
+ Object 11: 19.52 mm
+ Object 12: 52.39 mm
+ Object 13: 56.06 mm
+ Object 14: 45.79 mm
+ Object 15: 46.66 mm
+----------------------------------------
+
+--- Epoch 50 Summary ---
+Avg Train ADD Loss: 0.051808 m
+Avg Val ADD Loss:   0.048329 m
+ Object 01: 66.16 mm
+ Object 02: 69.54 mm
+ Object 04: 46.98 mm
+ Object 05: 49.83 mm
+ Object 06: 54.65 mm
+ Object 08: 49.58 mm
+ Object 09: 61.27 mm
+ Object 10: 15.83 mm
+ Object 11: 19.62 mm
+ Object 12: 52.56 mm
+ Object 13: 55.22 mm
+ Object 14: 44.83 mm
+ Object 15: 45.97 mm
+----------------------------------------

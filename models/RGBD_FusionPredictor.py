@@ -1,59 +1,68 @@
 import torch
 import torch.nn as nn
-from torchvision import models
+import torchvision.models as models
 
 class RGBD_FusionPredictor(nn.Module):
     def __init__(self):
         super(RGBD_FusionPredictor, self).__init__()
         
-        # 1. Ramo RGB: ResNet-50 (Backbone della Fase 3)
+        # 1. Ramo RGB: ResNet-50
         self.rgb_backbone = models.resnet50(weights='IMAGENET1K_V1')
-        num_features_rgb = self.rgb_backbone.fc.in_features
-        self.rgb_backbone.fc = nn.Identity() # Rimuove il classificatore
+        num_features_rgb = self.rgb_backbone.fc.in_features # 2048
+        self.rgb_backbone.fc = nn.Identity() 
         
-        # 2. Ramo DEPTH: Nuova CNN (usiamo ResNet-18 per leggere la geometria)
-        # Nota: La profondità è spesso a un canale, ma torchvision si aspetta 3 canali.
-        # Possiamo duplicare il canale Depth o modificare il primo layer.
+        # 2. Ramo DEPTH: ResNet-18
         self.depth_backbone = models.resnet18(weights='IMAGENET1K_V1')
-        num_features_depth = self.depth_backbone.fc.in_features
+        num_features_depth = self.depth_backbone.fc.in_features # 512
         self.depth_backbone.fc = nn.Identity()
         
-        # Dimensione totale dopo la concatenazione (2048 + 512 = 2560)
-        combined_features = num_features_rgb + num_features_depth
+        # 3. Ramo METADATI (Info Camera e BBox)
+        # Il vettore conterrà: [cx, cy, w, h, fx, fy, px, py] -> 8 valori
+        self.meta_encoder = nn.Sequential(
+            nn.Linear(8, 128),
+            nn.ReLU(),
+            nn.Linear(128, 64),
+            nn.ReLU()
+        )
         
-        # 3. Pose Estimator (MLP): Predictor di Traslazione e Rotazione
-        # Usiamo strati intermedi per elaborare la fusione delle feature
+        # Dimensione totale: 2048 (RGB) + 512 (Depth) + 64 (Meta) = 2624
+        combined_features = num_features_rgb + num_features_depth + 64
+        
+        # 4. Pose Estimator (MLP)
         self.fusion_mlp = nn.Sequential(
             nn.Linear(combined_features, 512),
             nn.ReLU(),
-            nn.Dropout(0.3)
+            nn.Linear(512, 256),
+            nn.ReLU()
         )
         
         # Output Traslazione: 3 coordinate (X, Y, Z)
-        self.translation_head = nn.Linear(512, 3)
+        self.translation_head = nn.Linear(256, 3)
         
-        # Output Rotazione: Matrice 3x3 (9 valori)
-        # (Si può continuare con i quaternioni (4) se preferisci, 
-        # ma il PDF suggerisce la matrice 3x3 per l'estensione)
-        self.rotation_head = nn.Linear(512, 9)
+        # Output Rotazione: Matrice 3x3 (9 valori) [cite: 81]
+        self.rotation_head = nn.Linear(256, 9)
 
-    def forward(self, rgb_crop, depth_crop):
+    def forward(self, rgb_crop, depth_crop, meta_info):
         """
-        rgb_crop: Immagine RGB (B, 3, 224, 224)
-        depth_crop: Mappa di profondità (B, 3, 224, 224) 
+        rgb_crop: (B, 3, 224, 224)
+        depth_crop: (B, 3, 224, 224)
+        meta_info: (B, 8) -> [cx, cy, w, h, fx, fy, px, py] normalizzati
         """
-        # Estrazione feature dai due rami
-        f_rgb = self.rgb_backbone(rgb_crop)      # Output: 2048
-        f_depth = self.depth_backbone(depth_crop) # Output: 512
+        # Estrazione feature visuali e geometriche
+        f_rgb = self.rgb_backbone(rgb_crop)      # 2048
+        f_depth = self.depth_backbone(depth_crop) # 512
         
-        # Fusione tramite concatenazione
-        fused = torch.cat((f_rgb, f_depth), dim=1) # Output: 2560
+        # Codifica dei metadati spaziali
+        f_meta = self.meta_encoder(meta_info)     # 64
         
-        # Elaborazione tramite MLP
-        shared_features = self.fusion_mlp(fused)
+        # Fusione per concatenazione (come richiesto dal PDF) [cite: 80]
+        fused = torch.cat((f_rgb, f_depth, f_meta), dim=1) # 2624
         
-        # Predizione dei parametri della posa
-        translation = self.translation_head(shared_features)
-        rotation = self.rotation_head(shared_features)
+        # Elaborazione finale
+        shared = self.fusion_mlp(fused)
+        
+        # Predizione posa 6D [cite: 12]
+        translation = self.translation_head(shared)
+        rotation = self.rotation_head(shared)
         
         return translation, rotation

@@ -176,3 +176,6 @@ cython_debug/
 
 datasets/
 wandb/
+
+pose_rgbd_checkpoint.pth
+pose_rgbd_fusion_best.pth

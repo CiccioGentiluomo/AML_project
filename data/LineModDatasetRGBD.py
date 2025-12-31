@@ -55,70 +55,75 @@ class LineModDatasetRGBD(Dataset):
         obj_folder = f"{obj_id:02d}"
         img_name = f"{img_id:04d}.png"
         
-        # 1. Caricamento metadati dai file YAML
-        target_ann = self.gt_cache[obj_id][img_id][0] 
+        ann_list = self.gt_cache[obj_id][img_id]
+        target_ann = next((item for item in ann_list if item['obj_id'] == obj_id), ann_list[0])
         target_info = self.info_cache[obj_id][img_id]
         
-        # Recupero della scala reale per la profondità
+        # Recupero della scala e dei parametri intrinseci K
         depth_scale = target_info['depth_scale']
+        K = target_info['cam_K'] # [fx, 0, px, 0, fy, py, 0, 0, 1]
+        fx, fy = K[0], K[4]
+        px, py = K[2], K[5]
 
-        # 2. Percorsi file
+        # 2. Coordinate Bounding Box e preparazione Meta Info
+        x, y, w, h = target_ann['obj_bb']
+        center_x, center_y = x + w / 2, y + h / 2
+        
+        # Creazione del vettore di metadati spaziali (normalizzati)
+        # Formato: [cx, cy, w, h, fx, fy, px, py]
+        meta_info = torch.tensor([
+            center_x / 640.0, center_y / 480.0, 
+            w / 640.0, h / 480.0,
+            fx / 1000.0, fy / 1000.0,
+            px / 640.0, py / 480.0
+        ], dtype=torch.float32)
+
+        # 3. Percorsi file
         rgb_path = os.path.join(self.dataset_root, 'data', obj_folder, 'rgb', img_name)
         depth_path = os.path.join(self.dataset_root, 'data', obj_folder, 'depth', img_name)
         
-        # 3. Caricamento e processamento profondità (Depth)
-        # Carichiamo a 16-bit UNCHANGED per non perdere dati
+        # 4. Processamento Profondità (Depth)
         depth_img_raw = cv2.imread(depth_path, cv2.IMREAD_UNCHANGED).astype(np.float32)
+        if len(depth_img_raw.shape) == 3:
+            depth_img_raw = depth_img_raw[:, :, 0]
         
-        # Conversione in metri: garantisce stabilità numerica e significato fisico
-        depth_mm = depth_img_raw * depth_scale
-        depth_meters = depth_mm / 1000.0
+        # Conversione in metri
+        depth_meters = (depth_img_raw * depth_scale) / 1000.0
 
-        # 4. Caricamento RGB
+        # 5. Caricamento RGB
         rgb_img = Image.open(rgb_path).convert("RGB")
         
-        # 5. Logica Square Crop basata sulla BBox di YOLO (non maschere)
-        x, y, w, h = target_ann['obj_bb']
-        center_x, center_y = x + w / 2, y + h / 2
+        # 6. Logica Square Crop
         side = max(w, h)
-        
         left, top = center_x - side / 2, center_y - side / 2
         right, bottom = center_x + side / 2, center_y + side / 2
         
-        # --- Crop e Resize RGB ---
+        # Crop e Resize RGB
         rgb_crop = rgb_img.crop((left, top, right, bottom))
         rgb_resized = rgb_crop.resize(self.img_size, Image.BILINEAR)
         rgb_tensor = self.rgb_transform(rgb_resized)
         
-        # --- Crop e Resize DEPTH (Manuale con NumPy) ---
-        H, W = depth_meters.shape
+        # Crop e Resize DEPTH
+        H, W = depth_meters.shape[:2]
         l, t, r, b = int(max(0, left)), int(max(0, top)), int(min(W, right)), int(min(H, bottom))
-        depth_crop = depth_meters[t:b, l:r] # Ritaglio dai dati in metri
+        depth_crop = depth_meters[t:b, l:r]
         
-        # Resize con INTER_NEAREST per preservare i valori di profondità reali
         depth_resized = cv2.resize(depth_crop, self.img_size, interpolation=cv2.INTER_NEAREST)
-        
-        # Trasformazione manuale in Tensore a 3 canali (per compatibilità ResNet-18)
-        # Spostiamo il canale in prima posizione (C, H, W) e duplichiamo
         depth_3ch = np.repeat(depth_resized[np.newaxis, :, :], 3, axis=0)
         depth_tensor = torch.from_numpy(depth_3ch).float() 
         
-        # 6. Elaborazione Target della Posa
-        # Rotazione: Matrice 3x3 appiattita (9 neuroni)
+        # 7. Target della Posa e Modello 3D
         R_mat = torch.tensor(target_ann['cam_R_m2c'], dtype=torch.float32).view(3, 3)
-        rotation_target = R_mat.flatten() 
-        
-        # Traslazione: Vettore 3D [X, Y, Z]
         T_vec = torch.tensor(target_ann['cam_t_m2c'], dtype=torch.float32) / 1000.0
-
         model_points = self.model_points_cache[obj_id]
         
         return {
-            "rgb": rgb_tensor,                # Input Ramo RGB
-            "depth": depth_tensor,            # Input Ramo Depth
-            "rotation_9d": rotation_target,   # Target per la testa di rotazione
-            "translation_3d": T_vec,          # Target per la testa di traslazione
+            "rgb": rgb_tensor,
+            "depth": depth_tensor,
+            "meta_info": meta_info,
+            "rotation_9d": R_mat.flatten(),
+            "translation_3d": T_vec,
             "obj_id": obj_id,
-            "R_matrix": R_mat,                # Necessario per calcolo ADD Loss
+            "R_matrix": R_mat,
             "model_points": model_points
         }

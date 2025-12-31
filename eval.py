@@ -1,106 +1,109 @@
-import os
-import yaml
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from PIL import Image
-import random
+import torch
+from torch.utils.data import DataLoader
+import numpy as np
+from tqdm import tqdm
 
-# ==========================================
-# CONFIGURAZIONE
-# ==========================================
-# Assicurati che questo percorso sia corretto rispetto a dove lanci lo script
-DATASET_ROOT = 'datasets/linemod/Linemod_preprocessed'
+# Import dai tuoi file
+from models.RGBD_FusionPredictor import RGBD_FusionPredictor
+from data.LineModDatasetRGBD import LineModDatasetRGBD
+from data.split import prepare_data_and_splits
 
-# L'oggetto che vuoi ispezionare (2 = Benchvise, la morsa)
-TARGET_OBJ_ID = 2 
+def compute_add_metric(pred_R, pred_T, gt_R, gt_T, model_points):
+    """
+    Calcola la distanza media ADD tra punti trasformati.
+    """
+    # Trasforma i punti con la posa predetta: (Points @ R_T) + T
+    pred_points = torch.mm(model_points, pred_R.t()) + pred_T
+    # Trasforma i punti con la posa reale (GT)
+    gt_points = torch.mm(model_points, gt_R.t()) + gt_T
+    
+    # Distanza euclidea media tra i corrispondenti punti
+    dis = torch.norm(pred_points - gt_points, dim=1)
+    return torch.mean(dis).item()
 
-def visualize_sample():
-    # 1. Costruisci i percorsi
-    obj_dir_name = f"{TARGET_OBJ_ID:02d}"
-    base_path = os.path.join(DATASET_ROOT, 'data', obj_dir_name)
+def evaluate():
+    # --- 1. CONFIGURAZIONE ---
+    ROOT_DATASET = "datasets/linemod/Linemod_preprocessed"
+    MODEL_PATH = "pose_rgbd_fusion_best.pth"
+    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
-    gt_path = os.path.join(base_path, 'gt.yml')
-    rgb_dir = os.path.join(base_path, 'rgb')
-    
-    # Verifica preliminare
-    if not os.path.exists(gt_path):
-        print(f"❌ Errore: Non trovo il file {gt_path}")
-        print(f"   Verifica che il percorso '{DATASET_ROOT}' sia corretto.")
-        return
+    # Diametri LineMOD per soglia 10% ADD
+    DIAMETERS = {
+        1: 102.09, 2: 282.60, 4: 171.64, 5: 201.50, 6: 154.54,
+        8: 261.47, 9: 108.99, 10: 164.66, 11: 175.88, 12: 162.24,
+        13: 258.41, 14: 282.25, 15: 212.35
+    }
 
-    # 2. Carica le annotazioni
-    print(f"📂 Caricamento GT per oggetto {TARGET_OBJ_ID} da {gt_path}...")
-    with open(gt_path, 'r') as f:
-        gt_data = yaml.safe_load(f)
+    # --- 2. CARICAMENTO DATI ---
+    _, val_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET, test_size=0.2)
+    # Nota: Carichiamo la cache info solo se necessaria per il dataset
+    from trainRGBD import load_info_cache
+    object_ids = sorted(gt_cache.keys())
+    info_cache = load_info_cache(ROOT_DATASET, object_ids)
+    
+    val_set = LineModDatasetRGBD(ROOT_DATASET, val_samples, gt_cache, info_cache)
+    val_loader = DataLoader(val_set, batch_size=1, shuffle=False) # Batch 1 per analisi singola
 
-    # 3. CERCA UN'IMMAGINE VALIDA
-    # LineMOD è "tricky": il file gt.yml contiene TUTTI gli oggetti visibili nella foto.
-    # Dobbiamo trovare una foto che contenga l'annotazione specifica per il nostro TARGET_OBJ_ID.
-    
-    valid_samples = []
-    
-    # gt_data è un dizionario: { img_id (int): [lista_annotazioni] }
-    for img_id, anns in gt_data.items():
-        for ann in anns:
-            if ann['obj_id'] == TARGET_OBJ_ID:
-                valid_samples.append(img_id)
-                break # Trovato, passiamo alla prossima immagine
-    
-    if not valid_samples:
-        print(f"⚠️ Nessuna annotazione trovata per l'oggetto ID {TARGET_OBJ_ID} in questo file YAML!")
-        return
+    # --- 3. CARICAMENTO MODELLO ---
+    model = RGBD_FusionPredictor().to(DEVICE)
+    model.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))
+    model.eval()
 
-    print(f"✅ Trovate {len(valid_samples)} immagini contenenti l'oggetto {TARGET_OBJ_ID}.")
+    # --- 4. LOOP DI VALUTAZIONE ---
+    results = {obj_id: {"errors": [], "correct": 0, "total": 0} for obj_id in object_ids}
 
-    # 4. Seleziona un'immagine a caso
-    random_img_id = random.choice(valid_samples)
+    print(f"🚀 Inizio Valutazione su {len(val_set)} campioni...")
     
-    # 5. Recupera l'annotazione ESATTA
-    anns = gt_data[random_img_id]
-    target_ann = None
-    
-    # Filtriamo di nuovo per essere sicuri al 100% di prendere la box giusta
-    for ann in anns:
-        if ann['obj_id'] == TARGET_OBJ_ID:
-            target_ann = ann
-            break
+    with torch.no_grad():
+        for batch in tqdm(val_loader):
+            rgb = batch["rgb"].to(DEVICE)
+            depth = batch["depth"].to(DEVICE)
+            meta = batch["meta_info"].to(DEVICE)
+            gt_R = batch["R_matrix"][0].to(DEVICE)
+            gt_T = batch["translation_3d"][0].to(DEVICE)
+            model_points = batch["model_points"][0].to(DEVICE)
+            obj_id = batch["obj_id"][0].item()
+
+            # Predizione
+            pred_T, pred_R_raw = model(rgb, depth, meta)
+            pred_R = pred_R_raw.view(3, 3) # Reshape per geometria
+
+            # Calcolo ADD
+            add_error_m = compute_add_metric(pred_R, pred_T[0], gt_R, gt_T, model_points)
+            add_error_mm = add_error_m * 1000
             
-    raw_bbox = target_ann['obj_bb'] # [x, y, w, h]
-    
-    print(f"🔹 Visualizzo Immagine ID: {random_img_id}")
-    print(f"🔹 Oggetto ID Annotazione: {target_ann['obj_id']} (Deve essere {TARGET_OBJ_ID})")
-    print(f"🔹 BBox [x, y, w, h]: {raw_bbox}")
+            # Verifica soglia 10% diametro
+            threshold = DIAMETERS[obj_id] * 0.1
+            is_correct = add_error_mm <= threshold
 
-    # 6. Carica e Visualizza
-    img_filename = f"{random_img_id:04d}.png"
-    img_path = os.path.join(rgb_dir, img_filename)
-    
-    try:
-        img = Image.open(img_path)
-    except Exception as e:
-        print(f"❌ Impossibile aprire l'immagine {img_path}: {e}")
-        return
+            # Update statistiche
+            results[obj_id]["errors"].append(add_error_mm)
+            results[obj_id]["total"] += 1
+            if is_correct:
+                results[obj_id]["correct"] += 1
 
-    fig, ax = plt.subplots(1, figsize=(10, 8))
-    ax.imshow(img)
+    # --- 5. REPORT FINALE ---
+    print("\n" + "="*50)
+    print(f"{'OBJ ID':<10} | {'AVG ADD (mm)':<15} | {'ACCURACY (0.1d)':<15}")
+    print("-" * 50)
     
-    # Disegna il rettangolo
-    # patches.Rectangle( (x,y), width, height )
-    rect = patches.Rectangle(
-        (raw_bbox[0], raw_bbox[1]), 
-        raw_bbox[2], 
-        raw_bbox[3], 
-        linewidth=3, 
-        edgecolor='#00FF00', # Verde Lime brillante
-        facecolor='none'
-    )
+    total_correct = 0
+    total_samples = 0
     
-    ax.add_patch(rect)
-    ax.set_title(f"Verifica Ground Truth - Oggetto {TARGET_OBJ_ID} - Img {random_img_id}")
-    plt.axis('off')
-    
-    print("🖼️  Finestra del grafico aperta...")
-    plt.show()
+    for obj_id in sorted(results.keys()):
+        data = results[obj_id]
+        avg_err = np.mean(data["errors"])
+        acc = (data["correct"] / data["total"]) * 100
+        
+        total_correct += data["correct"]
+        total_samples += data["total"]
+        
+        print(f"{obj_id:02d}         | {avg_err:<15.2f} | {acc:<15.2f}%")
+
+    overall_acc = (total_correct / total_samples) * 100
+    print("-" * 50)
+    print(f"OVERALL ACCURACY: {overall_acc:.2f}%")
+    print("="*50)
 
 if __name__ == "__main__":
-    visualize_sample()
+    evaluate()

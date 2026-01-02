@@ -1,0 +1,385 @@
+🔄 Caricamento checkpoint da pose_rgbd_checkpoint.pth...
+▶️ Ripresa dall'epoca 70. Salvataggio nuovo in pose_rgbd_checkpoint.pth
+
+--- Epoch 71 Summary ---
+Learning Rate: 1.25e-05
+Avg Train ADD: 0.008726 m | T-MSE: 0.000028 | R-MSE: 0.002191
+Avg Val ADD:   0.007024 m | T-MSE: 0.000014 | R-MSE: 0.002373
+ Object 01: 5.64 mm
+ Object 02: 7.89 mm
+ Object 04: 6.69 mm
+ Object 05: 6.93 mm
+ Object 06: 5.97 mm
+ Object 08: 8.47 mm
+ Object 09: 6.10 mm
+ Object 10: 6.86 mm
+ Object 11: 6.59 mm
+ Object 12: 6.71 mm
+ Object 13: 8.69 mm
+ Object 14: 7.90 mm
+ Object 15: 7.24 mm
+----------------------------------------
+
+--- Epoch 72 Summary ---
+Learning Rate: 1.25e-05
+Avg Train ADD: 0.008539 m | T-MSE: 0.000027 | R-MSE: 0.002182
+Avg Val ADD:   0.006430 m | T-MSE: 0.000011 | R-MSE: 0.002423
+ Object 01: 5.52 mm
+ Object 02: 7.48 mm
+ Object 04: 5.93 mm
+ Object 05: 6.70 mm
+ Object 06: 5.41 mm
+ Object 08: 7.60 mm
+ Object 09: 5.68 mm
+ Object 10: 5.90 mm
+ Object 11: 6.13 mm
+ Object 12: 5.97 mm
+ Object 13: 7.77 mm
+ Object 14: 7.07 mm
+ Object 15: 6.77 mm
+----------------------------------------
+
+--- Epoch 73 Summary ---
+Learning Rate: 1.25e-05
+Avg Train ADD: 0.008528 m | T-MSE: 0.000027 | R-MSE: 0.002124
+Avg Val ADD:   0.006978 m | T-MSE: 0.000014 | R-MSE: 0.002435
+ Object 01: 6.19 mm
+ Object 02: 7.98 mm
+ Object 04: 6.53 mm
+ Object 05: 6.86 mm
+ Object 06: 5.87 mm
+ Object 08: 8.11 mm
+ Object 09: 6.20 mm
+ Object 10: 6.65 mm
+ Object 11: 6.55 mm
+ Object 12: 6.65 mm
+ Object 13: 8.37 mm
+ Object 14: 7.85 mm
+ Object 15: 7.23 mm
+----------------------------------------
+
+--- Epoch 74 Summary ---
+Learning Rate: 1.25e-05
+Avg Train ADD: 0.008703 m | T-MSE: 0.000029 | R-MSE: 0.002184
+Avg Val ADD:   0.006175 m | T-MSE: 0.000010 | R-MSE: 0.002337
+ Object 01: 5.08 mm
+ Object 02: 7.01 mm
+ Object 04: 5.77 mm
+ Object 05: 6.20 mm
+ Object 06: 5.02 mm
+ Object 08: 7.63 mm
+ Object 09: 5.28 mm
+ Object 10: 5.85 mm
+ Object 11: 5.96 mm
+ Object 12: 5.65 mm
+ Object 13: 7.42 mm
+ Object 14: 7.23 mm
+ Object 15: 6.49 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 75 Summary ---
+Learning Rate: 1.25e-05
+Avg Train ADD: 0.008765 m | T-MSE: 0.000029 | R-MSE: 0.002153
+Avg Val ADD:   0.006440 m | T-MSE: 0.000011 | R-MSE: 0.002329
+ Object 01: 5.43 mm
+ Object 02: 7.25 mm
+ Object 04: 5.88 mm
+ Object 05: 6.46 mm
+ Object 06: 5.41 mm
+ Object 08: 7.78 mm
+ Object 09: 5.72 mm
+ Object 10: 5.99 mm
+ Object 11: 6.12 mm
+ Object 12: 6.00 mm
+ Object 13: 7.74 mm
+ Object 14: 7.34 mm
+ Object 15: 6.95 mm
+----------------------------------------
+
+--- Epoch 76 Summary ---
+Learning Rate: 1.25e-05
+Avg Train ADD: 0.008330 m | T-MSE: 0.000026 | R-MSE: 0.002161
+Avg Val ADD:   0.006353 m | T-MSE: 0.000011 | R-MSE: 0.002370
+ Object 01: 5.35 mm
+ Object 02: 7.10 mm
+ Object 04: 6.07 mm
+ Object 05: 6.32 mm
+ Object 06: 5.27 mm
+ Object 08: 7.82 mm
+ Object 09: 5.56 mm
+ Object 10: 5.88 mm
+ Object 11: 5.93 mm
+ Object 12: 6.03 mm
+ Object 13: 7.73 mm
+ Object 14: 7.23 mm
+ Object 15: 6.63 mm
+----------------------------------------
+
+--- Epoch 77 Summary ---
+Learning Rate: 1.25e-05
+Avg Train ADD: 0.008551 m | T-MSE: 0.000026 | R-MSE: 0.002097
+Avg Val ADD:   0.006487 m | T-MSE: 0.000012 | R-MSE: 0.002334
+ Object 01: 5.30 mm
+ Object 02: 7.22 mm
+ Object 04: 6.00 mm
+ Object 05: 6.99 mm
+ Object 06: 5.36 mm
+ Object 08: 7.92 mm
+ Object 09: 5.53 mm
+ Object 10: 5.82 mm
+ Object 11: 6.50 mm
+ Object 12: 5.94 mm
+ Object 13: 7.62 mm
+ Object 14: 7.60 mm
+ Object 15: 6.84 mm
+----------------------------------------
+
+--- Epoch 78 Summary ---
+Learning Rate: 1.25e-05
+Avg Train ADD: 0.008464 m | T-MSE: 0.000027 | R-MSE: 0.002138
+Avg Val ADD:   0.006282 m | T-MSE: 0.000011 | R-MSE: 0.002341
+ Object 01: 5.11 mm
+ Object 02: 7.11 mm
+ Object 04: 5.95 mm
+ Object 05: 6.36 mm
+ Object 06: 5.23 mm
+ Object 08: 7.73 mm
+ Object 09: 5.35 mm
+ Object 10: 5.76 mm
+ Object 11: 6.21 mm
+ Object 12: 5.75 mm
+ Object 13: 7.58 mm
+ Object 14: 7.35 mm
+ Object 15: 6.53 mm
+----------------------------------------
+
+--- Epoch 79 Summary ---
+Learning Rate: 1.25e-05
+Avg Train ADD: 0.008368 m | T-MSE: 0.000025 | R-MSE: 0.002127
+Avg Val ADD:   0.007361 m | T-MSE: 0.000016 | R-MSE: 0.002429
+ Object 01: 6.02 mm
+ Object 02: 7.91 mm
+ Object 04: 7.25 mm
+ Object 05: 6.88 mm
+ Object 06: 6.37 mm
+ Object 08: 8.83 mm
+ Object 09: 6.56 mm
+ Object 10: 7.20 mm
+ Object 11: 6.95 mm
+ Object 12: 7.16 mm
+ Object 13: 9.41 mm
+ Object 14: 7.94 mm
+ Object 15: 7.55 mm
+----------------------------------------
+
+--- Epoch 80 Summary ---
+Learning Rate: 1.25e-05
+Avg Train ADD: 0.008342 m | T-MSE: 0.000025 | R-MSE: 0.002082
+Avg Val ADD:   0.008190 m | T-MSE: 0.000022 | R-MSE: 0.002371
+ Object 01: 7.06 mm
+ Object 02: 8.67 mm
+ Object 04: 7.97 mm
+ Object 05: 8.61 mm
+ Object 06: 7.59 mm
+ Object 08: 9.34 mm
+ Object 09: 7.92 mm
+ Object 10: 7.81 mm
+ Object 11: 7.97 mm
+ Object 12: 8.00 mm
+ Object 13: 8.89 mm
+ Object 14: 8.43 mm
+ Object 15: 8.40 mm
+----------------------------------------
+
+--- Epoch 81 Summary ---
+Learning Rate: 6.25e-06
+Avg Train ADD: 0.007610 m | T-MSE: 0.000021 | R-MSE: 0.001961
+Avg Val ADD:   0.006207 m | T-MSE: 0.000011 | R-MSE: 0.002231
+ Object 01: 5.34 mm
+ Object 02: 6.98 mm
+ Object 04: 5.71 mm
+ Object 05: 6.30 mm
+ Object 06: 5.21 mm
+ Object 08: 7.59 mm
+ Object 09: 5.37 mm
+ Object 10: 5.85 mm
+ Object 11: 5.99 mm
+ Object 12: 5.72 mm
+ Object 13: 7.25 mm
+ Object 14: 7.12 mm
+ Object 15: 6.56 mm
+----------------------------------------
+
+--- Epoch 82 Summary ---
+Learning Rate: 6.25e-06
+Avg Train ADD: 0.007658 m | T-MSE: 0.000022 | R-MSE: 0.001897
+Avg Val ADD:   0.006516 m | T-MSE: 0.000012 | R-MSE: 0.002186
+ Object 01: 5.45 mm
+ Object 02: 7.53 mm
+ Object 04: 6.18 mm
+ Object 05: 6.58 mm
+ Object 06: 5.56 mm
+ Object 08: 7.79 mm
+ Object 09: 5.84 mm
+ Object 10: 6.20 mm
+ Object 11: 6.17 mm
+ Object 12: 6.09 mm
+ Object 13: 7.52 mm
+ Object 14: 7.29 mm
+ Object 15: 6.81 mm
+----------------------------------------
+
+--- Epoch 83 Summary ---
+Learning Rate: 6.25e-06
+Avg Train ADD: 0.007696 m | T-MSE: 0.000022 | R-MSE: 0.001931
+Avg Val ADD:   0.006023 m | T-MSE: 0.000010 | R-MSE: 0.002194
+ Object 01: 5.02 mm
+ Object 02: 6.86 mm
+ Object 04: 5.57 mm
+ Object 05: 6.09 mm
+ Object 06: 5.03 mm
+ Object 08: 7.34 mm
+ Object 09: 5.25 mm
+ Object 10: 5.65 mm
+ Object 11: 5.66 mm
+ Object 12: 5.58 mm
+ Object 13: 7.36 mm
+ Object 14: 6.87 mm
+ Object 15: 6.33 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------
+
+--- Epoch 84 Summary ---
+Learning Rate: 6.25e-06
+Avg Train ADD: 0.007446 m | T-MSE: 0.000020 | R-MSE: 0.001836
+Avg Val ADD:   0.008085 m | T-MSE: 0.000021 | R-MSE: 0.002193
+ Object 01: 6.99 mm
+ Object 02: 8.85 mm
+ Object 04: 7.67 mm
+ Object 05: 8.19 mm
+ Object 06: 7.02 mm
+ Object 08: 9.43 mm
+ Object 09: 7.52 mm
+ Object 10: 8.15 mm
+ Object 11: 7.53 mm
+ Object 12: 8.13 mm
+ Object 13: 8.98 mm
+ Object 14: 8.54 mm
+ Object 15: 8.36 mm
+----------------------------------------
+
+--- Epoch 85 Summary ---
+Learning Rate: 6.25e-06
+Avg Train ADD: 0.007542 m | T-MSE: 0.000021 | R-MSE: 0.001845
+Avg Val ADD:   0.006362 m | T-MSE: 0.000012 | R-MSE: 0.002212
+ Object 01: 5.38 mm
+ Object 02: 7.06 mm
+ Object 04: 5.78 mm
+ Object 05: 6.50 mm
+ Object 06: 5.42 mm
+ Object 08: 7.65 mm
+ Object 09: 5.47 mm
+ Object 10: 6.18 mm
+ Object 11: 6.08 mm
+ Object 12: 5.81 mm
+ Object 13: 7.51 mm
+ Object 14: 7.55 mm
+ Object 15: 6.59 mm
+----------------------------------------
+
+--- Epoch 86 Summary ---
+Learning Rate: 6.25e-06
+Avg Train ADD: 0.007239 m | T-MSE: 0.000019 | R-MSE: 0.001831
+Avg Val ADD:   0.006334 m | T-MSE: 0.000011 | R-MSE: 0.002189
+ Object 01: 5.55 mm
+ Object 02: 6.93 mm
+ Object 04: 5.84 mm
+ Object 05: 6.38 mm
+ Object 06: 5.40 mm
+ Object 08: 7.72 mm
+ Object 09: 5.71 mm
+ Object 10: 5.94 mm
+ Object 11: 5.95 mm
+ Object 12: 6.16 mm
+ Object 13: 7.44 mm
+ Object 14: 7.02 mm
+ Object 15: 6.58 mm
+----------------------------------------
+
+--- Epoch 87 Summary ---
+Learning Rate: 6.25e-06
+Avg Train ADD: 0.007411 m | T-MSE: 0.000020 | R-MSE: 0.001854
+Avg Val ADD:   0.006167 m | T-MSE: 0.000011 | R-MSE: 0.002182
+ Object 01: 5.28 mm
+ Object 02: 6.99 mm
+ Object 04: 5.66 mm
+ Object 05: 6.21 mm
+ Object 06: 5.14 mm
+ Object 08: 7.63 mm
+ Object 09: 5.33 mm
+ Object 10: 5.76 mm
+ Object 11: 5.77 mm
+ Object 12: 5.81 mm
+ Object 13: 7.35 mm
+ Object 14: 7.11 mm
+ Object 15: 6.45 mm
+----------------------------------------
+
+--- Epoch 88 Summary ---
+Learning Rate: 6.25e-06
+Avg Train ADD: 0.007221 m | T-MSE: 0.000019 | R-MSE: 0.001822
+Avg Val ADD:   0.006116 m | T-MSE: 0.000011 | R-MSE: 0.002167
+ Object 01: 5.03 mm
+ Object 02: 6.98 mm
+ Object 04: 5.75 mm
+ Object 05: 6.09 mm
+ Object 06: 5.08 mm
+ Object 08: 7.76 mm
+ Object 09: 5.28 mm
+ Object 10: 5.67 mm
+ Object 11: 5.74 mm
+ Object 12: 5.64 mm
+ Object 13: 7.36 mm
+ Object 14: 7.06 mm
+ Object 15: 6.43 mm
+----------------------------------------
+
+--- Epoch 89 Summary ---
+Learning Rate: 6.25e-06
+Avg Train ADD: 0.007500 m | T-MSE: 0.000020 | R-MSE: 0.001864
+Avg Val ADD:   0.006259 m | T-MSE: 0.000011 | R-MSE: 0.002189
+ Object 01: 5.25 mm
+ Object 02: 7.17 mm
+ Object 04: 5.85 mm
+ Object 05: 6.32 mm
+ Object 06: 5.27 mm
+ Object 08: 7.69 mm
+ Object 09: 5.50 mm
+ Object 10: 5.87 mm
+ Object 11: 5.90 mm
+ Object 12: 5.85 mm
+ Object 13: 7.51 mm
+ Object 14: 7.06 mm
+ Object 15: 6.45 mm
+----------------------------------------
+
+--- Epoch 90 Summary ---
+Learning Rate: 3.13e-06
+Avg Train ADD: 0.007012 m | T-MSE: 0.000018 | R-MSE: 0.001720
+Avg Val ADD:   0.006003 m | T-MSE: 0.000010 | R-MSE: 0.002146
+ Object 01: 5.04 mm
+ Object 02: 6.73 mm
+ Object 04: 5.52 mm
+ Object 05: 6.07 mm
+ Object 06: 5.00 mm
+ Object 08: 7.38 mm
+ Object 09: 5.24 mm
+ Object 10: 5.59 mm
+ Object 11: 5.71 mm
+ Object 12: 5.56 mm
+ Object 13: 7.36 mm
+ Object 14: 6.93 mm
+ Object 15: 6.19 mm
+⭐ NEW BEST! Model saved to pose_rgbd_fusion_best.pth
+----------------------------------------

@@ -7,6 +7,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 import yaml
 import os
 from datetime import datetime
+import wandb
 
 # Import dai tuoi file
 from models.RGBD_FusionPredictor import RGBD_FusionPredictor
@@ -34,7 +35,7 @@ def train():
     ROOT_DATASET = "datasets/linemod/Linemod_preprocessed"
     BATCH_SIZE = 32
     LEARNING_RATE = 1e-4
-    EPOCHS = 50 
+    EPOCHS = 100
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     SAVE_PATH_BEST = "pose_rgbd_fusion_best.pth"
@@ -42,6 +43,19 @@ def train():
     LOG_FILE = f"train_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
     
     SYMMETRIC_OBJECTS = {10, 11} 
+
+    # Inizializza wandb
+    wandb.init(
+        project="linemod-pose-estimation",
+        config={
+            "learning_rate": LEARNING_RATE,
+            "architecture": "RGBD_FusionPredictor",
+            "dataset": "LineMod_RGBD",
+            "epochs": EPOCHS,
+            "batch_size": BATCH_SIZE,
+            "weight_decay": 1e-4
+        }
+    )
 
     # --- 2. DATI ---
     train_samples, val_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET, test_size=0.2)
@@ -77,9 +91,8 @@ def train():
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
         start_epoch = checkpoint['epoch'] + 1
-        
-        # Reset best_val_loss per la nuova valutazione ADD rigorosa
-        best_val_loss = float('inf')
+        best_val_loss = checkpoint.get('best_val_loss', float('inf'))
+
         log_and_print(f"▶️ Ripresa dall'epoca {start_epoch} con reset best_loss.", LOG_FILE)
 
     # --- 5. LOOP DI TRAINING ---
@@ -118,6 +131,15 @@ def train():
         avg_train_loss = train_loss_total / len(train_loader)
         avg_train_t_mse = train_trans_mse / len(train_loader)
         avg_train_r_mse = train_rot_mse / len(train_loader)
+
+        # Log metriche di training
+        wandb.log({
+            "train/epoch": epoch + 1,
+            "train/loss_add": avg_train_loss,
+            "train/t_mse": avg_train_t_mse,
+            "train/r_mse": avg_train_r_mse,
+            "train/lr": current_lr
+        })
 
         # --- VALIDAZIONE ---
         model.eval()
@@ -162,10 +184,22 @@ def train():
         log_and_print(f"Avg Train ADD: {avg_train_loss:.6f} m | T-MSE: {avg_train_t_mse:.6f} | R-MSE: {avg_train_r_mse:.6f}", LOG_FILE)
         log_and_print(f"Avg Val ADD:   {avg_val_loss:.6f} m | T-MSE: {avg_val_t_mse:.6f} | R-MSE: {avg_val_r_mse:.6f}", LOG_FILE)
         
+
+        # Log metriche di validazione
+        val_metrics = {
+            "val/loss_add": avg_val_loss,
+            "val/t_mse": avg_val_t_mse,
+            "val/r_mse": avg_val_r_mse,
+        }
+
+
         for obj_id in object_ids:
             if obj_counts[obj_id] > 0:
                 err_mm = (obj_errors[obj_id] / obj_counts[obj_id]) * 1000
+                val_metrics[f"val_obj/error_mm_{obj_id:02d}"] = err_mm
                 log_and_print(f" Object {obj_id:02d}: {err_mm:.2f} mm", LOG_FILE)
+
+        wandb.log(val_metrics)
 
         # Salvataggio checkpoint e best model
         checkpoint_data = {
@@ -179,6 +213,7 @@ def train():
 
         if avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss
+            wandb.save(SAVE_PATH_BEST) # Carica il file .pth su wandb
             torch.save(model.state_dict(), SAVE_PATH_BEST)
             log_and_print(f"⭐ NEW BEST! Model saved to {SAVE_PATH_BEST}", LOG_FILE)
         
@@ -186,3 +221,4 @@ def train():
 
 if __name__ == "__main__":
     train()
+    wandb.finish()

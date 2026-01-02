@@ -3,12 +3,15 @@ from torch.utils.data import Dataset
 import os
 import numpy as np
 import cv2 
-from PIL import Image
-import torchvision.transforms as transforms
 import trimesh
 
-IMAGENET_MEAN = [0.485, 0.456, 0.406]
-IMAGENET_STD = [0.229, 0.224, 0.225]
+from utils.rgbd_inference_utils import (
+    convert_depth_to_meters,
+    square_crop_coords,
+    prepare_rgb_tensor,
+    prepare_depth_tensor,
+    build_meta_tensor,
+)
 
 class LineModDatasetRGBD(Dataset):
     def __init__(self, dataset_root, samples, gt_cache, info_cache, img_size=(224, 224), n_points=500):
@@ -19,11 +22,6 @@ class LineModDatasetRGBD(Dataset):
         self.img_size = img_size
         self.n_points = n_points
         
-        # Trasformazione standard per il ramo RGB (ResNet-50)
-        self.rgb_transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD)
-        ])
         # --- CACHE DEI MODELLI 3D ---
         # Pre-carichiamo i punti per ogni oggetto per non leggere il disco ogni volta
         self.model_points_cache = {}
@@ -61,56 +59,32 @@ class LineModDatasetRGBD(Dataset):
         
         # Recupero della scala e dei parametri intrinseci K
         depth_scale = target_info['depth_scale']
-        K = target_info['cam_K'] # [fx, 0, px, 0, fy, py, 0, 0, 1]
-        fx, fy = K[0], K[4]
-        px, py = K[2], K[5]
+        K = np.array(target_info['cam_K'], dtype=np.float32).reshape(3, 3)
 
         # 2. Coordinate Bounding Box e preparazione Meta Info
         x, y, w, h = target_ann['obj_bb']
-        center_x, center_y = x + w / 2, y + h / 2
         
-        # Creazione del vettore di metadati spaziali (normalizzati)
-        # Formato: [cx, cy, w, h, fx, fy, px, py]
-        meta_info = torch.tensor([
-            center_x / 640.0, center_y / 480.0, 
-            w / 640.0, h / 480.0,
-            fx / 1000.0, fy / 1000.0,
-            px / 640.0, py / 480.0
-        ], dtype=torch.float32)
-
         # 3. Percorsi file
         rgb_path = os.path.join(self.dataset_root, 'data', obj_folder, 'rgb', img_name)
         depth_path = os.path.join(self.dataset_root, 'data', obj_folder, 'depth', img_name)
         
         # 4. Processamento Profondità (Depth)
-        depth_img_raw = cv2.imread(depth_path, cv2.IMREAD_UNCHANGED).astype(np.float32)
-        if len(depth_img_raw.shape) == 3:
-            depth_img_raw = depth_img_raw[:, :, 0]
-        
-        # Conversione in metri
-        depth_meters = (depth_img_raw * depth_scale) / 1000.0
+        depth_img_raw = cv2.imread(depth_path, cv2.IMREAD_UNCHANGED)
+        rgb_img = cv2.imread(rgb_path)
+        if depth_img_raw is None or rgb_img is None:
+            raise FileNotFoundError(f"Immagini mancanti per obj {obj_id} img {img_id}")
+        depth_meters = convert_depth_to_meters(depth_img_raw, depth_scale)
 
-        # 5. Caricamento RGB
-        rgb_img = Image.open(rgb_path).convert("RGB")
-        
         # 6. Logica Square Crop
-        side = max(w, h)
-        left, top = center_x - side / 2, center_y - side / 2
-        right, bottom = center_x + side / 2, center_y + side / 2
-        
-        # Crop e Resize RGB
-        rgb_crop = rgb_img.crop((left, top, right, bottom))
-        rgb_resized = rgb_crop.resize(self.img_size, Image.BILINEAR)
-        rgb_tensor = self.rgb_transform(rgb_resized)
-        
-        # Crop e Resize DEPTH
-        H, W = depth_meters.shape[:2]
-        l, t, r, b = int(max(0, left)), int(max(0, top)), int(min(W, right)), int(min(H, bottom))
-        depth_crop = depth_meters[t:b, l:r]
-        
-        depth_resized = cv2.resize(depth_crop, self.img_size, interpolation=cv2.INTER_NEAREST)
-        depth_3ch = np.repeat(depth_resized[np.newaxis, :, :], 3, axis=0)
-        depth_tensor = torch.from_numpy(depth_3ch).float() 
+        crop_coords = square_crop_coords([x, y, w, h], rgb_img.shape)
+        if crop_coords is None:
+            raise ValueError(f"Crop non valido per obj {obj_id} img {img_id}")
+
+        rgb_tensor = prepare_rgb_tensor(rgb_img, crop_coords).squeeze(0)
+        depth_tensor = prepare_depth_tensor(depth_meters, crop_coords).squeeze(0)
+
+        meta_tensor = build_meta_tensor([x, y, w, h], K, rgb_img.shape)
+        meta_info = meta_tensor.squeeze(0)
         
         # 7. Target della Posa e Modello 3D
         R_mat = torch.tensor(target_ann['cam_R_m2c'], dtype=torch.float32).view(3, 3)

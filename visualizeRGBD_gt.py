@@ -39,11 +39,13 @@ def get_3d_bbox_and_edges(points):
 
     # Lista di coppie di indici che formano gli spigoli del cubo
     edges = [
-        (0, 1), (0, 2), (0, 4), # Dal vertice min base
-        (7, 6), (7, 5), (7, 3), # Dal vertice max opposto
-        (1, 3), (1, 5),         # Connessioni intermedie
+        (0, 1), (0, 2), (0, 4),
+        (1, 3), (1, 5),
         (2, 3), (2, 6),
-        (4, 5), (4, 6)
+        (3, 7),
+        (4, 5), (4, 6),
+        (5, 7),
+        (6, 7)
     ]
     return corners, edges
 

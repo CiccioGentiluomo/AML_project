@@ -11,7 +11,8 @@ import wandb
 import numpy as np
 
 # Import dai nuovi file dedicati alla versione Simple
-from models.RGBD_FusionPredictor_simple import RGBD_FusionPredictor_Simple
+#from models.RGBD_FusionPredictor_simple import RGBD_FusionPredictor_Simple
+from models.FusionResNetCustom import RGBD_FusionPredictor_Simple
 from data.LineModDatasetRGBD_simple import LineModDatasetRGBD_Simple
 from utils.add_loss import ADDLoss
 from data.split import prepare_data_and_splits
@@ -44,18 +45,22 @@ def train():
     CHECKPOINT_PATH = "pose_rgbd_simple_1ch_checkpoint.pth"
     LOG_FILE = f"train_simple_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
 
+    N_POINTS = 500  # Numero di punti del modello da campionare
+
     # Inizializza wandb con i metadati della nuova architettura
     wandb.init(
         project="linemod-pose-estimation",
-        name="SimpleCNN-1ch-Depth",
+        name="Custom ResNet-5 CNN",
         resume="allow",
+        id="3pfh0dd2",
         config={
             "learning_rate": LEARNING_RATE,
-            "architecture": "SimpleDepthCNN_1ch",
+            "architecture": "CustomResNet5_1ch",
             "dataset": "LineMod_RGBD_Simple",
             "epochs": EPOCHS,
             "batch_size": BATCH_SIZE,
-            "depth_channels": 1
+            "depth_channels": 1,
+            "n_points": N_POINTS
         }
     )
 
@@ -65,8 +70,8 @@ def train():
     info_cache = load_info_cache(ROOT_DATASET, object_ids)
     
     # Carichiamo il dataset Simple che gestisce nativamente il canale singolo
-    train_set = LineModDatasetRGBD_Simple(ROOT_DATASET, train_samples, gt_cache, info_cache)
-    val_set = LineModDatasetRGBD_Simple(ROOT_DATASET, val_samples, gt_cache, info_cache)
+    train_set = LineModDatasetRGBD_Simple(ROOT_DATASET, train_samples, gt_cache, info_cache, n_points=N_POINTS)
+    val_set = LineModDatasetRGBD_Simple(ROOT_DATASET, val_samples, gt_cache, info_cache, n_points=N_POINTS)
 
     train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=4, pin_memory=True)
     val_loader = DataLoader(val_set, batch_size=BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True)
@@ -166,16 +171,10 @@ def train():
         scheduler.step(avg_val_loss)
 
         # --- 6. LOGGING E SALVATAGGIO ---
-        log_and_print(f"\n--- Epoch {epoch+1} Summary (Simple 1ch) ---", LOG_FILE)
+        log_and_print(f"\n--- Epoch {epoch+1} Summary (Custom Resnet-5) ---", LOG_FILE)
         log_and_print(f"Learning Rate: {current_lr:.2e}", LOG_FILE)
-        log_and_print(
-            f"Avg Train ADD: {avg_train_loss:.6f} m | T-MSE: {avg_train_t_mse:.6f} | R-MSE: {avg_train_r_mse:.6f}",
-            LOG_FILE
-        )
-        log_and_print(
-            f"Avg Val ADD:   {avg_val_loss:.6f} m | T-MSE: {avg_val_t_mse:.6f} | R-MSE: {avg_val_r_mse:.6f}",
-            LOG_FILE
-        )
+        log_and_print(f"Avg Train ADD: {avg_train_loss:.6f} m | T-MSE: {avg_train_t_mse:.6f} | R-MSE: {avg_train_r_mse:.6f}", LOG_FILE)
+        log_and_print(f"Avg Val ADD:   {avg_val_loss:.6f} m | T-MSE: {avg_val_t_mse:.6f} | R-MSE: {avg_val_r_mse:.6f}", LOG_FILE)
 
         val_metrics = {
             "val/loss_add": avg_val_loss,

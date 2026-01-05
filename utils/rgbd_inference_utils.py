@@ -74,8 +74,9 @@ def prepare_depth_tensor(depth_meters, crop_coords):
         return None
 
     depth_resized = cv2.resize(depth_crop, INPUT_SIZE, interpolation=cv2.INTER_NEAREST).astype(np.float32)
-    depth_3ch = np.repeat(depth_resized[np.newaxis, :, :], 3, axis=0)
-    return torch.from_numpy(depth_3ch).float().unsqueeze(0)
+    # Depth come singolo canale (compatibile con SimpleDepthCNN)
+    depth_1ch = depth_resized[np.newaxis, :, :]
+    return torch.from_numpy(depth_1ch).float().unsqueeze(0)
 
 def build_meta_tensor(bbox, cam_K, img_shape):
     h_img, w_img = img_shape[:2]

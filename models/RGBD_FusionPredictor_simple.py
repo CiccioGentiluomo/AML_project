@@ -5,18 +5,32 @@ import torchvision.models as models
 class SimpleDepthCNN(nn.Module):
     def __init__(self, out_features=512):
         super(SimpleDepthCNN, self).__init__()
-        # Architettura snella per estrarre feature geometriche da 1 canale 
+        # Architettura con 5 layer convoluzionali
         self.features = nn.Sequential(
+            # Layer 1: 224 -> 112
             nn.Conv2d(1, 32, kernel_size=3, padding=1),
-            nn.BatchNorm2d(32), nn.ReLU(), nn.MaxPool2d(2), # 112
+            nn.BatchNorm2d(32), nn.ReLU(), nn.MaxPool2d(2),
+            
+            # Layer 2: 112 -> 56
             nn.Conv2d(32, 64, kernel_size=3, padding=1),
-            nn.BatchNorm2d(64), nn.ReLU(), nn.MaxPool2d(2), # 56
+            nn.BatchNorm2d(64), nn.ReLU(), nn.MaxPool2d(2),
+            
+            # Layer 3: 56 -> 28
             nn.Conv2d(64, 128, kernel_size=3, padding=1),
-            nn.BatchNorm2d(128), nn.ReLU(), nn.MaxPool2d(2), # 28
+            nn.BatchNorm2d(128), nn.ReLU(), nn.MaxPool2d(2),
+            
+            # Layer 4: 28 -> 14
             nn.Conv2d(128, 256, kernel_size=3, padding=1),
-            nn.BatchNorm2d(256), nn.ReLU(), nn.AdaptiveAvgPool2d((1, 1))
+            nn.BatchNorm2d(256), nn.ReLU(), nn.MaxPool2d(2), 
+            
+            # Layer 5 (Nuovo): 14 -> 7 (prima del Pooling globale)
+            nn.Conv2d(256, 512, kernel_size=3, padding=1),
+            nn.BatchNorm2d(512), nn.ReLU(),
+            
+            nn.AdaptiveAvgPool2d((1, 1))
         )
-        self.fc = nn.Linear(256, out_features)
+        # Ora l'input della FC è 512 perché l'ultimo layer ha 512 filtri
+        self.fc = nn.Linear(512, out_features)
 
     def forward(self, x):
         x = self.features(x)

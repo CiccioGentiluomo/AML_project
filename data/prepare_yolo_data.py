@@ -1,10 +1,18 @@
 import os
 import shutil
+import sys
+from pathlib import Path
 import yaml
 import glob
 from PIL import Image
-from sklearn.model_selection import train_test_split
 from tqdm import tqdm
+
+if __package__ in {None, ""}:
+    PROJECT_ROOT = Path(__file__).resolve().parents[1]
+    if str(PROJECT_ROOT) not in sys.path:
+        sys.path.insert(0, str(PROJECT_ROOT))
+
+from data.split import prepare_data_and_splits
 
 # ==========================================
 # 1. CONFIGURAZIONE
@@ -15,9 +23,6 @@ SOURCE_ROOT = 'datasets/linemod/Linemod_preprocessed'
 
 # Percorso dove salvare il dataset pronto per YOLO
 OUTPUT_DIR = 'datasets/linemod/linemod_yolo_format'
-
-# Percentuale di validazione (20%)
-VAL_SIZE = 0.2
 
 # Mappatura Nomi Classi (ID LineMod -> Nome)
 # LineMod usa ID 1-15. YOLO userà ID 0-14.
@@ -107,12 +112,25 @@ def main():
     reader = LineModRawScanner(SOURCE_ROOT)
     print(f"✅ Totale immagini trovate: {len(reader.samples)}")
 
+    # Dizionario rapido per recuperare il percorso partendo dalla tupla (obj_id, img_id)
+    sample_to_path = {(obj_id, img_id): path for obj_id, img_id, path in reader.samples}
+
+    # 1.b Otteniamo gli split globali (60/20/20) da riutilizzare ovunque
+    train_samples, val_samples, test_samples, _ = prepare_data_and_splits(SOURCE_ROOT)
+    splits = {
+        'train': train_samples,
+        'val': val_samples,
+        'test': test_samples,
+    }
+
     # 2. Crea cartelle di output
     dirs = {
         'train_img': os.path.join(OUTPUT_DIR, 'images', 'train'),
         'val_img':   os.path.join(OUTPUT_DIR, 'images', 'val'),
+        'test_img':  os.path.join(OUTPUT_DIR, 'images', 'test'),
         'train_lbl': os.path.join(OUTPUT_DIR, 'labels', 'train'),
-        'val_lbl':   os.path.join(OUTPUT_DIR, 'labels', 'val')
+        'val_lbl':   os.path.join(OUTPUT_DIR, 'labels', 'val'),
+        'test_lbl':  os.path.join(OUTPUT_DIR, 'labels', 'test'),
     }
     
     # Se esiste già, avvisa ma prosegue
@@ -122,69 +140,58 @@ def main():
     for d in dirs.values():
         os.makedirs(d, exist_ok=True)
 
-    # 3. Split Train/Val (80/20 casuale su tutto il dataset)
-    indices = list(range(len(reader.samples)))
-    train_idx, val_idx = train_test_split(indices, test_size=VAL_SIZE, random_state=42, shuffle=True)
-    
-    # Mappa indice -> 'train' o 'val'
-    split_map = {i: 'train' for i in train_idx}
-    split_map.update({i: 'val' for i in val_idx})
-    
-    print(f"📊 Split configurato: {len(train_idx)} Train / {len(val_idx)} Validation")
+    print("📊 Split configurato:")
+    for split_name, sample_list in splits.items():
+        print(f"   - {split_name.capitalize()}: {len(sample_list)} campioni")
 
-    # 4. Loop Principale
-    count_ok = 0
-    count_err = 0
+    # 3. Loop Principale
+    count_ok = {split: 0 for split in splits}
+    count_err = {split: 0 for split in splits}
 
-    for idx in tqdm(range(len(reader.samples)), desc="Generazione File"):
-        obj_id, img_id, src_img_path = reader.samples[idx]
-        split = split_map[idx]
-        
-        # Recupera BBox
-        raw_bb = reader.get_bbox(obj_id, img_id)
-        if raw_bb is None:
-            count_err += 1
-            continue
+    for split_name, sample_list in splits.items():
+        progress = tqdm(sample_list, desc=f"Preparazione {split_name}")
+        for obj_id, img_id in progress:
+            src_img_path = sample_to_path.get((obj_id, img_id))
+            if src_img_path is None:
+                count_err[split_name] += 1
+                continue
 
-        # Apri immagine per dimensioni (necessario per normalizzare)
-        try:
-            with Image.open(src_img_path) as img:
-                img_w, img_h = img.size
-        except Exception:
-            count_err += 1
-            continue
+            raw_bb = reader.get_bbox(obj_id, img_id)
+            if raw_bb is None:
+                count_err[split_name] += 1
+                continue
 
-        # Calcolo Coordinate YOLO Normalizzate
-        x_min, y_min, w, h = raw_bb
-        cx_norm = (x_min + w / 2) / img_w
-        cy_norm = (y_min + h / 2) / img_h
-        w_norm = w / img_w
-        h_norm = h / img_h
-        
-        # YOLO Class ID (parte da 0, LineMod parte da 1)
-        class_id = obj_id - 1
-        
-        # Genera nome univoco
-        unique_name = f"obj{obj_id:02d}_{img_id:04d}"
-        
-        # Percorsi destinazione
-        dst_img_path = os.path.join(dirs[f'{split}_img'], unique_name + ".png")
-        dst_txt_path = os.path.join(dirs[f'{split}_lbl'], unique_name + ".txt")
-        
-        # A. Copia Immagine
-        shutil.copy(src_img_path, dst_img_path)
-        
-        # B. Scrivi Label .txt
-        with open(dst_txt_path, 'w') as f:
-            f.write(f"{class_id} {cx_norm:.6f} {cy_norm:.6f} {w_norm:.6f} {h_norm:.6f}\n")
-            
-        count_ok += 1
+            try:
+                with Image.open(src_img_path) as img:
+                    img_w, img_h = img.size
+            except Exception:
+                count_err[split_name] += 1
+                continue
+
+            x_min, y_min, w, h = raw_bb
+            cx_norm = (x_min + w / 2) / img_w
+            cy_norm = (y_min + h / 2) / img_h
+            w_norm = w / img_w
+            h_norm = h / img_h
+
+            class_id = obj_id - 1
+            unique_name = f"obj{obj_id:02d}_{img_id:04d}"
+
+            dst_img_path = os.path.join(dirs[f"{split_name}_img"], unique_name + ".png")
+            dst_txt_path = os.path.join(dirs[f"{split_name}_lbl"], unique_name + ".txt")
+
+            shutil.copy(src_img_path, dst_img_path)
+            with open(dst_txt_path, 'w') as f:
+                f.write(f"{class_id} {cx_norm:.6f} {cy_norm:.6f} {w_norm:.6f} {h_norm:.6f}\n")
+
+            count_ok[split_name] += 1
 
     # 5. Genera data.yaml
     yaml_content = {
         'path': OUTPUT_DIR,
         'train': 'images/train',
         'val': 'images/val',
+        'test': 'images/test',
         'nc': len(CLASS_NAMES),
         'names': CLASS_NAMES
     }
@@ -197,9 +204,11 @@ def main():
     print(f"✅ OPERAZIONE COMPLETATA")
     print(f"📁 Dataset YOLO salvato in: {OUTPUT_DIR}")
     print(f"📄 Configurazione: {yaml_path}")
-    print(f"✅ File processati con successo: {count_ok}")
-    if count_err > 0:
-        print(f"⚠️  File con errori o annotazioni mancanti: {count_err}")
+    for split_name in ['train', 'val', 'test']:
+        print(
+            f"   - {split_name.capitalize()}: {count_ok[split_name]} file ok"
+            + (f" | {count_err[split_name]} errori" if count_err[split_name] else "")
+        )
     print("========================================")
 
 if __name__ == "__main__":

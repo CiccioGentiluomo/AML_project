@@ -64,7 +64,7 @@ def train():
     )
 
     # --- 2. DATI (Configurati per 1 canale) ---
-    train_samples, val_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET, test_size=0.2)
+    train_samples, val_samples, _, gt_cache = prepare_data_and_splits(ROOT_DATASET)
     object_ids = sorted(gt_cache.keys())
     info_cache = load_info_cache(ROOT_DATASET, object_ids)
     

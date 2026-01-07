@@ -77,7 +77,7 @@ def train():
     )
 
     # --- DATA ---
-    train_samples, val_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET, test_size=0.2)
+    train_samples, val_samples, _, gt_cache = prepare_data_and_splits(ROOT_DATASET)
     train_set = LineModDataset(ROOT_DATASET, train_samples, gt_cache)
     val_set = LineModDataset(ROOT_DATASET, val_samples, gt_cache)
 

@@ -100,17 +100,17 @@ def main():
     pose_model.eval()
 
     models_info = get_all_models_info(ROOT_DATASET)
-    _, val_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET, test_size=0.2)
-    val_dataset = LineModDataset(ROOT_DATASET, val_samples, gt_cache)
+    _, _, test_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET)
+    test_dataset = LineModDataset(ROOT_DATASET, test_samples, gt_cache)
 
     print("📸 Pipeline pronta. 'q' per uscire.")
 
     with torch.no_grad():
-        indices = list(range(len(val_dataset)))
+        indices = list(range(len(test_dataset)))
         random.shuffle(indices)
 
         for idx in indices:
-            sample = val_dataset[idx]
+            sample = test_dataset[idx]
             obj_id = int(sample["obj_id"])
             img_path = os.path.join(ROOT_DATASET, 'data', f"{obj_id:02d}", 'rgb', f"{sample['sample_id']:04d}.png")
             

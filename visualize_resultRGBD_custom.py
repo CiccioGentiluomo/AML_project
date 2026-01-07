@@ -89,7 +89,7 @@ def main():
     print("🛰️ Caricamento YOLO...")
     yolo_model = YOLO(YOLO_PATH)
 
-    _, val_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET, test_size=0.2)
+    _, _, test_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET)
     object_ids = sorted(gt_cache.keys())
     info_cache = load_info_cache(ROOT_DATASET, object_ids)
     models_info = get_all_models_info(ROOT_DATASET)
@@ -106,11 +106,11 @@ def main():
     print("📸 Pipeline pronta. 'q' per uscire.")
 
     with torch.no_grad():
-        indices = list(range(len(val_samples)))
+        indices = list(range(len(test_samples)))
         random.shuffle(indices)
 
         for idx in indices:
-            obj_id, sample_id = val_samples[idx]
+            obj_id, sample_id = test_samples[idx]
             obj_info = get_object_metadata(models_info, obj_id)
             if obj_info is None:
                 print(f"⚠️ Metadata mancanti per obj {obj_id:02d}.")

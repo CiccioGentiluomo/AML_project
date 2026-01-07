@@ -33,7 +33,7 @@ def get_annotation(gt_cache, obj_id, sample_id):
     return next((ann for ann in ann_list if ann['obj_id'] == obj_id), ann_list[0])
 
 
-def generate_fusion_report(val_samples, gt_cache, info_cache, model, models_info, root_dataset, device):
+def generate_fusion_report(test_samples, gt_cache, info_cache, model, models_info, root_dataset, device):
     class_names = {
         1: "ape", 2: "benchvise", 3: "bowl", 4: "camera", 5: "can",
         6: "cat", 7: "cup", 8: "driller", 9: "duck", 10: "eggbox",
@@ -54,7 +54,7 @@ def generate_fusion_report(val_samples, gt_cache, info_cache, model, models_info
 
     print("\n📊 VALUTAZIONE MODELLO RGB-D CUSTOM...")
     with torch.no_grad():
-        for obj_id, sample_id in tqdm(val_samples):
+        for obj_id, sample_id in tqdm(test_samples):
             if obj_id not in class_names or obj_id not in ply_cache:
                 continue
 
@@ -136,7 +136,7 @@ def generate_fusion_report(val_samples, gt_cache, info_cache, model, models_info
         print(f"{row['Classe']:<15} | {row['Media_ADD']:<15.2f} | {row['Accuracy']:<12.1f}")
     print("=" * 60)
     print(f"MEDIA GLOBALE -> Accuratezza (ADD < 0.1d): {summary['Accuracy'].mean():.1f}%")
-    total_samples = len([item for item in val_samples if item[0] in class_names])
+    total_samples = len([item for item in test_samples if item[0] in class_names])
     print(f"Campioni processati: {processed}/{total_samples}")
     print(f"Campioni saltati per info mancanti: {missing_info}")
     print(f"Campioni saltati per crop/processing: {invalid_samples}")
@@ -150,14 +150,14 @@ def main():
     with open(os.path.join(ROOT_DATASET, 'models', 'models_info.yml'), 'r') as f:
         models_info = yaml.safe_load(f)
 
-    _, val_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET, test_size=0.2)
+    _, _, test_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET)
     info_cache = load_info_cache(ROOT_DATASET, sorted(gt_cache.keys()))
 
     model = RGBD_FusionPredictor_custom().to(DEVICE)
     model.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))
     model.eval()
 
-    generate_fusion_report(val_samples, gt_cache, info_cache, model, models_info, ROOT_DATASET, DEVICE)
+    generate_fusion_report(test_samples, gt_cache, info_cache, model, models_info, ROOT_DATASET, DEVICE)
 
 
 if __name__ == "__main__":

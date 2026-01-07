@@ -88,19 +88,19 @@ def visualize_complete_evaluation():
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # 1. Caricamento Dati e Modello
-    _, val_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET, test_size=0.2)
+    _, _, test_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET)
     # Serve la cache per il dataset
     from trainRGBD import load_info_cache
     info_cache = load_info_cache(ROOT_DATASET, sorted(gt_cache.keys()))
-    val_set = LineModDatasetRGBD(ROOT_DATASET, val_samples, gt_cache, info_cache)
+    test_set = LineModDatasetRGBD(ROOT_DATASET, test_samples, gt_cache, info_cache)
 
     model = RGBD_FusionPredictor().to(DEVICE)
     model.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))
     model.eval()
 
 # 2. Selezione Campione Casuale
-    idx = random.randint(0, len(val_set) - 1)
-    batch = val_set[idx]
+    idx = random.randint(0, len(test_set) - 1)
+    batch = test_set[idx]
     
     # Prepariamo i tensori per la rete (aggiungendo la dimensione del batch .unsqueeze(0))
     rgb_tensor = batch["rgb"].unsqueeze(0).to(DEVICE)
@@ -124,10 +124,10 @@ def visualize_complete_evaluation():
 
     # --- CARICAMENTO IMMAGINE ORIGINALE ---
     # I campioni sono tuple (obj_id, img_id), quindi costruiamo il percorso RGB direttamente
-    sample_obj_id, sample_img_id = val_set.samples[idx]
+    sample_obj_id, sample_img_id = test_set.samples[idx]
     obj_folder = f"{sample_obj_id:02d}"
     img_stem = f"{sample_img_id:04d}"
-    rgb_path = os.path.join(val_set.dataset_root, 'data', obj_folder, 'rgb', f"{img_stem}.png")
+    rgb_path = os.path.join(test_set.dataset_root, 'data', obj_folder, 'rgb', f"{img_stem}.png")
 
     if not os.path.exists(rgb_path):
         print(f"⚠️ Immagine originale non trovata in {rgb_path}. Uso il crop normalizzato.")

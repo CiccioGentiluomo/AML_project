@@ -153,16 +153,16 @@ def run_inspector():
 
     with open(os.path.join(ROOT_DATASET, 'models', 'models_info.yml'), 'r') as f:
         models_info = yaml.safe_load(f)
-    _, val_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET, test_size=0.2)
-    val_dataset = LineModDataset(ROOT_DATASET, val_samples, gt_cache)
+    _, _, test_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET)
+    test_dataset = LineModDataset(ROOT_DATASET, test_samples, gt_cache)
 
     # 1. Report su terminale con tre confronti
-    generate_terminal_report(val_dataset, pose_net, yolo, models_info, ROOT_DATASET, DEVICE, intrinsics)
+    generate_terminal_report(test_dataset, pose_net, yolo, models_info, ROOT_DATASET, DEVICE, intrinsics)
 
     # 2. Visualizzazione con GT verde e Pred rosso
     while True:
-        idx = np.random.randint(len(val_dataset))
-        batch = val_dataset[idx]
+        idx = np.random.randint(len(test_dataset))
+        batch = test_dataset[idx]
         obj_id = int(batch["obj_id"])
         img_rgb = cv2.cvtColor(cv2.imread(os.path.join(ROOT_DATASET, 'data', f"{obj_id:02d}", 'rgb', f"{batch['sample_id']:04d}.png")), cv2.COLOR_BGR2RGB)
         

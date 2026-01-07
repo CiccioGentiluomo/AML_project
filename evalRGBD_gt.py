@@ -35,14 +35,14 @@ def evaluate():
     }
 
     # --- 2. CARICAMENTO DATI ---
-    _, val_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET, test_size=0.2)
+        _, _, test_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET)
     # Nota: Carichiamo la cache info solo se necessaria per il dataset
     from trainRGBD import load_info_cache
     object_ids = sorted(gt_cache.keys())
     info_cache = load_info_cache(ROOT_DATASET, object_ids)
     
-    val_set = LineModDatasetRGBD(ROOT_DATASET, val_samples, gt_cache, info_cache)
-    val_loader = DataLoader(val_set, batch_size=1, shuffle=False) # Batch 1 per analisi singola
+        test_set = LineModDatasetRGBD(ROOT_DATASET, test_samples, gt_cache, info_cache)
+        test_loader = DataLoader(test_set, batch_size=1, shuffle=False) # Batch 1 per analisi singola
 
     # --- 3. CARICAMENTO MODELLO ---
     model = RGBD_FusionPredictor().to(DEVICE)
@@ -52,10 +52,10 @@ def evaluate():
     # --- 4. LOOP DI VALUTAZIONE ---
     results = {obj_id: {"errors": [], "correct": 0, "total": 0} for obj_id in object_ids}
 
-    print(f"🚀 Inizio Valutazione su {len(val_set)} campioni...")
+    print(f"🚀 Inizio Valutazione su {len(test_set)} campioni...")
     
     with torch.no_grad():
-        for batch in tqdm(val_loader):
+        for batch in tqdm(test_loader):
             rgb = batch["rgb"].to(DEVICE)
             depth = batch["depth"].to(DEVICE)
             meta = batch["meta_info"].to(DEVICE)

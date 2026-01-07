@@ -41,7 +41,7 @@ def get_annotation(gt_cache, obj_id, sample_id):
 
 # --- 3. REPORT GENERATOR PER RGB-D FUSION CON YOLO ---
 
-def generate_fusion_report(val_samples, gt_cache, info_cache, model, yolo_model, models_info, ROOT_DATASET, DEVICE):
+def generate_fusion_report(test_samples, gt_cache, info_cache, model, yolo_model, models_info, ROOT_DATASET, DEVICE):
     class_names = {
         1: "ape", 2: "benchvise", 3: "bowl", 4: "camera", 5: "can",
         6: "cat", 7: "cup", 8: "driller", 9: "duck", 10: "eggbox",
@@ -63,7 +63,7 @@ def generate_fusion_report(val_samples, gt_cache, info_cache, model, yolo_model,
 
     print("\n📊 VALUTAZIONE MODELLO RGB-D FUSION...")
     with torch.no_grad():
-        for obj_id, sample_id in tqdm(val_samples):
+        for obj_id, sample_id in tqdm(test_samples):
             if obj_id not in class_names:
                 continue
 
@@ -164,7 +164,7 @@ def generate_fusion_report(val_samples, gt_cache, info_cache, model, yolo_model,
         print(f"{r['Classe']:<15} | {r['Media_ADD']:<15.2f} | {r['Accuracy']:<12.1f}")
     print("="*60)
     print(f"MEDIA GLOBALE -> Accuratezza (ADD < 0.1d): {summary['Accuracy'].mean():.1f}%")
-    total_samples = len([item for item in val_samples if item[0] in class_names])
+    total_samples = len([item for item in test_samples if item[0] in class_names])
     print(f"Campioni processati: {processed}/{total_samples}")
     print(f"Campioni saltati per info mancanti: {missing_info}")
     print(f"Campioni saltati per YOLO/crop: {detection_misses}")
@@ -182,7 +182,7 @@ def main():
         models_info = yaml.safe_load(f)
 
     # Inizializzazione Dataset e Modello
-    _, val_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET, test_size=0.2)
+    _, _, test_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET)
     info_cache = load_info_cache(ROOT_DATASET, sorted(gt_cache.keys()))
     
     model = RGBD_FusionPredictor().to(DEVICE)
@@ -190,7 +190,7 @@ def main():
     yolo_model = YOLO(YOLO_PATH)
 
     # Esecuzione Report
-    generate_fusion_report(val_samples, gt_cache, info_cache, model, yolo_model, models_info, ROOT_DATASET, DEVICE)
+    generate_fusion_report(test_samples, gt_cache, info_cache, model, yolo_model, models_info, ROOT_DATASET, DEVICE)
 
 if __name__ == "__main__":
     main()

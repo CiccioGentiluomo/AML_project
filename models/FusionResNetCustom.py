@@ -40,7 +40,8 @@ class SimpleResNet1ch(nn.Module):
         self.start = nn.Sequential(
             nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False),
             nn.BatchNorm2d(64),
-            nn.ReLU()
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         )
         
         # Layer 2-5: Blocchi Residui per estrarre feature complesse

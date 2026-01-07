@@ -50,12 +50,11 @@ def train():
     # Inizializza wandb con i metadati della nuova architettura
     wandb.init(
         project="linemod-pose-estimation",
-        name="Custom ResNet-5 CNN",
+        name="Custom ResNet-10 7x7 maxPool CNN",
         resume="allow",
-        id="3pfh0dd2",
         config={
             "learning_rate": LEARNING_RATE,
-            "architecture": "CustomResNet5_1ch",
+            "architecture": "CustomResNet10_1ch",
             "dataset": "LineMod_RGBD_Simple",
             "epochs": EPOCHS,
             "batch_size": BATCH_SIZE,

@@ -7,9 +7,9 @@ import yaml
 import trimesh
 from ultralytics import YOLO
 
-from models.FusionResNetCustom import RGBD_FusionPredictor_Simple
+from models.FusionResNetCustom import RGBD_FusionPredictor_custom
 from data.split import prepare_data_and_splits
-from utils.rgbd_inference_utils_simple import (
+from utils.rgbd_utils_custom import (
     load_info_cache,
     fetch_sample_info,
     convert_depth_to_meters,
@@ -18,7 +18,7 @@ from utils.rgbd_inference_utils_simple import (
     prepare_depth_tensor,
     build_meta_tensor,
 )
-from utils.rgbd_inference_utils import get_object_metadata, select_detection_for_object
+from utils.rgbd_utils import get_object_metadata, select_detection_for_object
 
 
 def get_all_models_info(root_path):
@@ -77,12 +77,12 @@ def project_3d_box(img, R, T, K, obj_info, color=(0, 255, 0), thickness=2):
 
 def main():
     ROOT_DATASET = "datasets/linemod/Linemod_preprocessed"
-    MODEL_PATH = "pose_rgbd_simple_1ch_best.pth"
+    MODEL_PATH = "pose_rgbd_custom_1ch_best.pth"
     YOLO_PATH = "runs/detect/linemod_yolo_run/weights/best.pt"
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    print("🚀 Caricamento modello RGBD simple...")
-    pose_model = RGBD_FusionPredictor_Simple().to(DEVICE)
+    print("🚀 Caricamento modello RGBD custom...")
+    pose_model = RGBD_FusionPredictor_custom().to(DEVICE)
     pose_model.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))
     pose_model.eval()
 
@@ -102,7 +102,7 @@ def main():
         else:
             print(f"⚠️ File PLY mancante per obj {oid:02d} ({ply_path}).")
 
-    window_name = "Verde=GT, Rosso=Pred (RGBD Simple)"
+    window_name = "Verde=GT, Rosso=Pred (RGBD custom)"
     print("📸 Pipeline pronta. 'q' per uscire.")
 
     with torch.no_grad():

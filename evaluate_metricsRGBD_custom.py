@@ -7,10 +7,10 @@ import trimesh
 import pandas as pd
 from tqdm import tqdm
 
-#from models.RGBD_FusionPredictor_simple import RGBD_FusionPredictor_Simple
-from models.FusionResNetCustom import RGBD_FusionPredictor_Simple
+#from models.RGBD_FusionPredictor_custom import RGBD_FusionPredictor_custom
+from models.FusionResNetCustom import RGBD_FusionPredictor_custom
 from data.split import prepare_data_and_splits
-from utils.rgbd_inference_utils_simple import (
+from utils.rgbd_utils_custom import (
     load_info_cache,
     fetch_sample_info,
     convert_depth_to_meters,
@@ -19,7 +19,7 @@ from utils.rgbd_inference_utils_simple import (
     prepare_depth_tensor,
     build_meta_tensor,
 )
-from utils.rgbd_inference_utils import get_object_metadata
+from utils.rgbd_utils import get_object_metadata
 
 
 def compute_add_distance(points_3d, R_gt, T_gt, R_pred, T_pred):
@@ -52,7 +52,7 @@ def generate_fusion_report(val_samples, gt_cache, info_cache, model, models_info
     missing_info = 0
     processed = 0
 
-    print("\n📊 VALUTAZIONE MODELLO RGB-D SIMPLE...")
+    print("\n📊 VALUTAZIONE MODELLO RGB-D CUSTOM...")
     with torch.no_grad():
         for obj_id, sample_id in tqdm(val_samples):
             if obj_id not in class_names or obj_id not in ply_cache:
@@ -144,7 +144,7 @@ def generate_fusion_report(val_samples, gt_cache, info_cache, model, models_info
 
 def main():
     ROOT_DATASET = "datasets/linemod/Linemod_preprocessed"
-    MODEL_PATH = "pose_rgbd_simple_1ch_best.pth"
+    MODEL_PATH = "pose_rgbd_custom_1ch_best.pth"
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     with open(os.path.join(ROOT_DATASET, 'models', 'models_info.yml'), 'r') as f:
@@ -153,7 +153,7 @@ def main():
     _, val_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET, test_size=0.2)
     info_cache = load_info_cache(ROOT_DATASET, sorted(gt_cache.keys()))
 
-    model = RGBD_FusionPredictor_Simple().to(DEVICE)
+    model = RGBD_FusionPredictor_custom().to(DEVICE)
     model.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))
     model.eval()
 

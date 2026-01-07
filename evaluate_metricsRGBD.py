@@ -11,7 +11,7 @@ from tqdm import tqdm
 # Import dai tuoi file
 from models.RGBD_FusionPredictor import RGBD_FusionPredictor
 from data.split import prepare_data_and_splits
-from utils.rgbd_inference_utils import (
+from utils.rgbd_utils import (
     load_info_cache,
     fetch_sample_info,
     convert_depth_to_meters,

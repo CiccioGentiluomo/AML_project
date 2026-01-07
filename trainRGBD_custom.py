@@ -10,10 +10,10 @@ from datetime import datetime
 import wandb
 import numpy as np
 
-# Import dai nuovi file dedicati alla versione Simple
-#from models.RGBD_FusionPredictor_simple import RGBD_FusionPredictor_Simple
-from models.FusionResNetCustom import RGBD_FusionPredictor_Simple
-from data.LineModDatasetRGBD_simple import LineModDatasetRGBD_Simple
+# Import dai nuovi file dedicati alla versione custom
+#from models.RGBD_FusionPredictor_custom import RGBD_FusionPredictor_custom
+from models.FusionResNetCustom import RGBD_FusionPredictor_custom
+from data.LineModDatasetRGBD_custom import LineModDatasetRGBD_custom
 from utils.add_loss import ADDLoss
 from data.split import prepare_data_and_splits
 
@@ -40,10 +40,10 @@ def train():
     EPOCHS = 100
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
-    # Percorsi di salvataggio specifici per la versione Simple
-    SAVE_PATH_BEST = "pose_rgbd_simple_1ch_best.pth"
-    CHECKPOINT_PATH = "pose_rgbd_simple_1ch_checkpoint.pth"
-    LOG_FILE = f"train_simple_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+    # Percorsi di salvataggio specifici per la versione custom
+    SAVE_PATH_BEST = "pose_rgbd_custom_1ch_best.pth"
+    CHECKPOINT_PATH = "pose_rgbd_custom_1ch_checkpoint.pth"
+    LOG_FILE = f"train_custom_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
 
     N_POINTS = 500  # Numero di punti del modello da campionare
 
@@ -55,7 +55,7 @@ def train():
         config={
             "learning_rate": LEARNING_RATE,
             "architecture": "CustomResNet10_1ch",
-            "dataset": "LineMod_RGBD_Simple",
+            "dataset": "LineMod_RGBD_custom",
             "epochs": EPOCHS,
             "batch_size": BATCH_SIZE,
             "depth_channels": 1,
@@ -68,15 +68,15 @@ def train():
     object_ids = sorted(gt_cache.keys())
     info_cache = load_info_cache(ROOT_DATASET, object_ids)
     
-    # Carichiamo il dataset Simple che gestisce nativamente il canale singolo
-    train_set = LineModDatasetRGBD_Simple(ROOT_DATASET, train_samples, gt_cache, info_cache, n_points=N_POINTS)
-    val_set = LineModDatasetRGBD_Simple(ROOT_DATASET, val_samples, gt_cache, info_cache, n_points=N_POINTS)
+    # Carichiamo il dataset custom che gestisce nativamente il canale singolo
+    train_set = LineModDatasetRGBD_custom(ROOT_DATASET, train_samples, gt_cache, info_cache, n_points=N_POINTS)
+    val_set = LineModDatasetRGBD_custom(ROOT_DATASET, val_samples, gt_cache, info_cache, n_points=N_POINTS)
 
     train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=4, pin_memory=True)
     val_loader = DataLoader(val_set, batch_size=BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True)
 
     # --- 3. MODELLO E OTTIMIZZATORE ---
-    model = RGBD_FusionPredictor_Simple().to(DEVICE)
+    model = RGBD_FusionPredictor_custom().to(DEVICE)
     criterion = ADDLoss().to(DEVICE)
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
     scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5)
@@ -113,7 +113,7 @@ def train():
             pred_R = pred_R_raw.view(-1, 3, 3)
 
             # Calcolo perdita ADD
-            batch_loss = criterion(pred_R, pred_T, gt_R, gt_T, model_points, is_symmetric=False)
+            batch_loss = criterion(pred_R, pred_T, gt_R, gt_T, model_points)
 
             with torch.no_grad():
                 train_trans_mse += F.mse_loss(pred_T, gt_T).item()
@@ -159,7 +159,7 @@ def train():
 
                 for i in range(rgb.size(0)):
                     curr_id = ids[i].item()
-                    loss = criterion(pred_R[i:i+1], pred_T[i:i+1], gt_R[i:i+1], gt_T[i:i+1], model_points[i:i+1], is_symmetric=False)
+                    loss = criterion(pred_R[i:i+1], pred_T[i:i+1], gt_R[i:i+1], gt_T[i:i+1], model_points[i:i+1])
                     val_loss_total += loss.item()
                     obj_errors[curr_id] += loss.item()
                     obj_counts[curr_id] += 1

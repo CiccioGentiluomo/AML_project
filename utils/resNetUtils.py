@@ -1,5 +1,4 @@
 import torch
-import numpy as np
 from scipy.spatial.transform import Rotation as R
 
 def matrix_to_quaternion(matrix_3x3):

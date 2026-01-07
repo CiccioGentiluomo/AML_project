@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 
-class SimpleDepthCNN(nn.Module):
+class customCNN(nn.Module):
     def __init__(self, out_features=512):
-        super(SimpleDepthCNN, self).__init__()
+        super(customCNN, self).__init__()
         # Architettura con 5 layer convoluzionali
         self.features = nn.Sequential(
             # Layer 1: 224 -> 112
@@ -36,15 +36,15 @@ class SimpleDepthCNN(nn.Module):
         x = self.features(x)
         return self.fc(x.view(x.size(0), -1))
 
-class RGBD_FusionPredictor_Simple(nn.Module):
+class RGBD_FusionPredictor_custom(nn.Module):
     def __init__(self):
-        super(RGBD_FusionPredictor_Simple, self).__init__()
+        super(RGBD_FusionPredictor_custom, self).__init__()
         # Ramo RGB (ResNet-50) [cite: 4]
         self.rgb_backbone = models.resnet50(weights='IMAGENET1K_V1')
         self.rgb_backbone.fc = nn.Identity() 
         
-        # Ramo Depth (Simple 1-ch) 
-        self.depth_backbone = SimpleDepthCNN(out_features=512)
+        # Ramo Depth (custom 1-ch) 
+        self.depth_backbone = customCNN(out_features=512)
         
         # Meta Encoder [cite: 5]
         self.meta_encoder = nn.Sequential(nn.Linear(8, 128), nn.ReLU(), nn.Linear(128, 64), nn.ReLU())

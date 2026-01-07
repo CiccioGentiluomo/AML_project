@@ -1,12 +1,15 @@
-import os
 import math
+import os
+from datetime import datetime
+
 import torch
-import torch.optim as optim
 import torch.nn.functional as F
+import torch.optim as optim
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from torch.optim.lr_scheduler import ReduceLROnPlateau
-# Import dai tuoi file
+import wandb
+
 from models.PosePredictor import PosePredictor
 from data.linemod_dataset import LineModDataset
 from data.split import prepare_data_and_splits
@@ -21,97 +24,191 @@ def quaternion_angle_error(pred, target):
     angles = 2.0 * torch.acos(dot) * (180.0 / math.pi)
     return angles
 
+
+def log_and_print(message, log_file):
+    print(message)
+    with open(log_file, "a", encoding="utf-8") as log_fp:
+        log_fp.write(message + "\n")
+
+
+def set_backbone_trainable(model, trainable):
+    for param in model.backbone.parameters():
+        param.requires_grad = trainable
+
+
+def build_optimizer(model, lr, weight_decay, backbone_unfrozen):
+    set_backbone_trainable(model, backbone_unfrozen)
+    params = model.parameters() if backbone_unfrozen else filter(lambda p: p.requires_grad, model.parameters())
+    return optim.Adam(params, lr=lr, weight_decay=weight_decay)
+
+
+def build_scheduler(optimizer):
+    return ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=5)
+
+
 def train():
-    # --- 1. CONFIGURAZIONE ---
+    # --- CONFIG ---
     ROOT_DATASET = "datasets/linemod/Linemod_preprocessed"
     BATCH_SIZE = 32
-    LEARNING_RATE = 1e-4
-    EPOCHS = 50 
-    FREEZE_EPOCHS = 10 # Epoche in cui la ResNet-50 è bloccata
+    BASE_LR = 1e-4
+    BACKBONE_LR_FACTOR = 0.1
+    WEIGHT_DECAY = 1e-4
+    EPOCHS = 50
+    FREEZE_EPOCHS = 10
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    SAVE_PATH = "pose_resnet50_baseline.pth"
 
-    # --- 2. DATI ---
-    # Split 80/20 come concordato [cite: 96]
+    SAVE_PATH_BEST = "pose_resnet50_baseline_best.pth"
+    CHECKPOINT_PATH = "pose_resnet50_baseline_checkpoint.pth"
+    LOG_FILE = f"train_rgb_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+
+    wandb.init(
+        project="linemod-pose-estimation",
+        name="PosePredictor-RGB",
+        resume="allow",
+        config={
+            "learning_rate": BASE_LR,
+            "architecture": "PosePredictor",
+            "dataset": "LineMod_RGB",
+            "epochs": EPOCHS,
+            "batch_size": BATCH_SIZE,
+            "freeze_epochs": FREEZE_EPOCHS,
+            "weight_decay": WEIGHT_DECAY,
+        },
+    )
+
+    # --- DATA ---
     train_samples, val_samples, gt_cache = prepare_data_and_splits(ROOT_DATASET, test_size=0.2)
-    
     train_set = LineModDataset(ROOT_DATASET, train_samples, gt_cache)
     val_set = LineModDataset(ROOT_DATASET, val_samples, gt_cache)
 
-    train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
-    val_loader = DataLoader(val_set, batch_size=BATCH_SIZE, shuffle=False, num_workers=4)
+    train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=4, pin_memory=True)
+    val_loader = DataLoader(val_set, batch_size=BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True)
 
-    # --- 3. MODELLO E FREEZE INIZIALE ---
-    # Usiamo pesi pre-addestrati ImageNet [cite: 174]
+    # --- MODEL ---
     model = PosePredictor().to(DEVICE)
-    
-    print(f"❄️ Congelamento della backbone ResNet-50 per {FREEZE_EPOCHS} epoche...")
-    for param in model.backbone.parameters():
-        param.requires_grad = False
-
-    # Ottimizzatore: passiamo solo i parametri "vivi" (la testa di regressione)
-    optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=LEARNING_RATE)
-    
-    # Scheduler: riduce il LR se la val_loss non migliora per 5 epoche
-    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5)
-
-    # --- 4. LOOP ---
-    best_val_loss = float('inf')
     backbone_unfrozen = False
 
-    for epoch in range(EPOCHS):
-        # Logica di Unfreeze
+    optimizer = build_optimizer(model, BASE_LR, WEIGHT_DECAY, backbone_unfrozen)
+    scheduler = build_scheduler(optimizer)
+
+    start_epoch = 0
+    best_val_loss = float("inf")
+
+    if os.path.exists(CHECKPOINT_PATH):
+        log_and_print(f"Loading checkpoint from {CHECKPOINT_PATH}...", LOG_FILE)
+        checkpoint = torch.load(CHECKPOINT_PATH, map_location=DEVICE)
+        model.load_state_dict(checkpoint["model_state_dict"])
+        backbone_unfrozen = checkpoint.get("backbone_unfrozen", False)
+        start_epoch = checkpoint.get("epoch", -1) + 1
+        best_val_loss = checkpoint.get("best_val_loss", float("inf"))
+
+        optimizer = build_optimizer(
+            model,
+            BASE_LR * (BACKBONE_LR_FACTOR if backbone_unfrozen else 1.0),
+            WEIGHT_DECAY,
+            backbone_unfrozen,
+        )
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+
+        scheduler = build_scheduler(optimizer)
+        scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
+
+        log_and_print(f"Resuming from epoch {start_epoch} (best val loss {best_val_loss:.6f}).", LOG_FILE)
+
+    # --- LOOP ---
+    for epoch in range(start_epoch, EPOCHS):
         if epoch >= FREEZE_EPOCHS and not backbone_unfrozen:
-            print("🔥 Sblocco della backbone per il fine-tuning...")
-            for param in model.backbone.parameters():
-                param.requires_grad = True
-            # Aggiorniamo l'ottimizzatore per includere tutta la rete con un LR più basso
-            optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE * 0.1)
+            log_and_print("Unfreezing ResNet-50 backbone for fine-tuning...", LOG_FILE)
             backbone_unfrozen = True
+            optimizer = build_optimizer(model, BASE_LR * BACKBONE_LR_FACTOR, WEIGHT_DECAY, backbone_unfrozen)
+            scheduler = build_scheduler(optimizer)
 
         model.train()
-        train_loss, train_deg = 0.0, 0.0
-        
-        for batch in tqdm(train_loader, desc=f"Epoch {epoch+1}/{EPOCHS} [Train]"):
+        train_loss_total = 0.0
+        train_deg_total = 0.0
+
+        pbar = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{EPOCHS} [Train]")
+        for batch in pbar:
             inputs = batch["rgb"].to(DEVICE)
             targets = batch["quaternion"].to(DEVICE)
 
             optimizer.zero_grad()
             outputs = model(inputs)
-            
-            # Loss basata solo sulla rotazione [cite: 33, 176]
+
             loss = rotation_loss(outputs, targets)
             loss.backward()
             optimizer.step()
 
-            train_loss += loss.item()
-            train_deg += quaternion_angle_error(outputs, targets).mean().item()
+            batch_deg = quaternion_angle_error(outputs, targets).mean().item()
 
-        # --- VALIDAZIONE ---
+            train_loss_total += loss.item()
+            train_deg_total += batch_deg
+            pbar.set_postfix({"loss": loss.item(), "deg": batch_deg})
+
+        avg_train_loss = train_loss_total / len(train_loader)
+        avg_train_deg = train_deg_total / len(train_loader)
+
         model.eval()
-        val_loss, val_deg = 0.0, 0.0
+        val_loss_total = 0.0
+        val_deg_total = 0.0
         with torch.no_grad():
             for batch in val_loader:
                 inputs = batch["rgb"].to(DEVICE)
                 targets = batch["quaternion"].to(DEVICE)
-                outputs = model(inputs)
-                
-                loss = rotation_loss(outputs, targets)
-                val_loss += loss.item()
-                val_deg += quaternion_angle_error(outputs, targets).mean().item()
 
-        avg_val_loss = val_loss / len(val_loader)
-        avg_val_deg = val_deg / len(val_loader)
-        
-        # Aggiorna lo scheduler
+                outputs = model(inputs)
+                loss = rotation_loss(outputs, targets)
+
+                val_loss_total += loss.item()
+                val_deg_total += quaternion_angle_error(outputs, targets).mean().item()
+
+        avg_val_loss = val_loss_total / len(val_loader)
+        avg_val_deg = val_deg_total / len(val_loader)
+
         scheduler.step(avg_val_loss)
 
-        print(f"Epoch {epoch+1}: Val Loss {avg_val_loss:.4f} | Val Deg {avg_val_deg:.2f}°")
+        current_lr = optimizer.param_groups[0]["lr"]
+        log_and_print(
+            f"Epoch {epoch + 1}/{EPOCHS} | LR {current_lr:.2e} | Train Loss {avg_train_loss:.6f} | Val Loss {avg_val_loss:.6f}",
+            LOG_FILE,
+        )
+        log_and_print(
+            f" -> Train Deg {avg_train_deg:.2f}° | Val Deg {avg_val_deg:.2f}°",
+            LOG_FILE,
+        )
+
+        wandb.log(
+            {
+                "epoch": epoch + 1,
+                "lr": current_lr,
+                "train/loss": avg_train_loss,
+                "train/deg": avg_train_deg,
+                "val/loss": avg_val_loss,
+                "val/deg": avg_val_deg,
+                "backbone_unfrozen": int(backbone_unfrozen),
+            },
+            step=epoch + 1,
+        )
+
+        checkpoint_payload = {
+            "epoch": epoch,
+            "model_state_dict": model.state_dict(),
+            "optimizer_state_dict": optimizer.state_dict(),
+            "scheduler_state_dict": scheduler.state_dict(),
+            "best_val_loss": best_val_loss,
+            "backbone_unfrozen": backbone_unfrozen,
+        }
+        torch.save(checkpoint_payload, CHECKPOINT_PATH)
 
         if avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss
-            torch.save(model.state_dict(), SAVE_PATH)
-            print(f"✅ Miglior modello salvato!")
+            torch.save(model.state_dict(), SAVE_PATH_BEST)
+            wandb.run.summary["best_val_loss"] = best_val_loss
+            log_and_print(f"New best model saved to {SAVE_PATH_BEST}.", LOG_FILE)
+
+    log_and_print("Training completed.", LOG_FILE)
+
 
 if __name__ == "__main__":
     train()
+    wandb.finish()

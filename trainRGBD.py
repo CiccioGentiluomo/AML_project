@@ -115,8 +115,8 @@ def train():
             pred_T, pred_R_raw = model(rgb, depth, meta)
             pred_R = pred_R_raw.view(-1, 3, 3)
 
-            # Training con ADD pura (is_symmetric=False)
-            batch_loss = criterion(pred_R, pred_T, gt_R, gt_T, model_points, is_symmetric=False)
+            
+            batch_loss = criterion(pred_R, pred_T, gt_R, gt_T, model_points)
 
             with torch.no_grad():
                 train_trans_mse += F.mse_loss(pred_T, gt_T).item()
@@ -166,7 +166,7 @@ def train():
                     # Validazione rigorosa con ADD standard per monitoraggio reale
                     loss = criterion(
                         pred_R[i:i+1], pred_T[i:i+1], gt_R[i:i+1], gt_T[i:i+1], 
-                        model_points[i:i+1], is_symmetric=False 
+                        model_points[i:i+1]
                     )
                     val_loss_total += loss.item()
                     obj_errors[curr_id] += loss.item()

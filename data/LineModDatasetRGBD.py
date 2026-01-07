@@ -5,7 +5,7 @@ import numpy as np
 import cv2 
 import trimesh
 
-from utils.rgbd_inference_utils import (
+from utils.rgbd_utils import (
     convert_depth_to_meters,
     square_crop_coords,
     prepare_rgb_tensor,

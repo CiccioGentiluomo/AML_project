@@ -4,9 +4,9 @@ import os
 import cv2 
 import trimesh
 import numpy as np
-from utils.rgbd_inference_utils_simple import convert_depth_to_meters, square_crop_coords, prepare_rgb_tensor, prepare_depth_tensor, build_meta_tensor
+from utils.rgbd_utils_custom import convert_depth_to_meters, square_crop_coords, prepare_rgb_tensor, prepare_depth_tensor, build_meta_tensor
 
-class LineModDatasetRGBD_Simple(Dataset):
+class LineModDatasetRGBD_custom(Dataset):
     def __init__(self, dataset_root, samples, gt_cache, info_cache, img_size=(224, 224), n_points=500):
         self.dataset_root = dataset_root
         self.samples = samples

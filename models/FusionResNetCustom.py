@@ -32,9 +32,9 @@ class ResidualBlock(nn.Module):
 
 # --- BACKBONE DEPTH: SIMIL RESNET (1-CANALE) ---
 # Architettura a 5 strati ottimizzata per dati geometrici
-class SimpleResNet1ch(nn.Module):
+class ResNet1ch(nn.Module):
     def __init__(self, out_features=512):
-        super(SimpleResNet1ch, self).__init__()
+        super(ResNet1ch, self).__init__()
         
         # Layer 1: Convoluzione iniziale (porta 1 canale a 64)
         self.start = nn.Sequential(
@@ -63,17 +63,17 @@ class SimpleResNet1ch(nn.Module):
         return self.fc(x.view(x.size(0), -1))
 
 # --- MODELLO DI FUSIONE COMPLETO ---
-class RGBD_FusionPredictor_Simple(nn.Module):
+class RGBD_FusionPredictor_custom(nn.Module):
     def __init__(self):
-        super(RGBD_FusionPredictor_Simple, self).__init__()
+        super(RGBD_FusionPredictor_custom, self).__init__()
         
         # 1. Ramo RGB: ResNet-50 pre-addestrata (3 canali)
         self.rgb_backbone = models.resnet50(weights='IMAGENET1K_V1')
         num_features_rgb = self.rgb_backbone.fc.in_features  # 2048
         self.rgb_backbone.fc = nn.Identity() 
         
-        # 2. Ramo DEPTH: SimpleResNet1ch (1 canale, addestrata da zero)
-        self.depth_backbone = SimpleResNet1ch(out_features=512)
+        # 2. Ramo DEPTH: ResNet1ch (1 canale, addestrata da zero)
+        self.depth_backbone = ResNet1ch(out_features=512)
         
         # 3. Ramo METADATI (BBox e Camera Info)
         self.meta_encoder = nn.Sequential(

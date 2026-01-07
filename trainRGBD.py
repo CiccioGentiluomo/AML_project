@@ -10,7 +10,7 @@ from datetime import datetime
 import wandb
 
 # Import dai tuoi file
-from models.RGBD_FusionPredictor_simple import RGBD_FusionPredictor_Simple
+from models.RGBD_FusionPredictor import RGBD_FusionPredictor
 from data.LineModDatasetRGBD import LineModDatasetRGBD
 from utils.add_loss import ADDLoss
 from data.split import prepare_data_and_splits
@@ -49,7 +49,7 @@ def train():
         project="linemod-pose-estimation",
         config={
             "learning_rate": LEARNING_RATE,
-            "architecture": "RGBD_FusionPredictor_Simple",
+            "architecture": "RGBD_FusionPredictor",
             "dataset": "LineMod_RGBD",
             "epochs": EPOCHS,
             "batch_size": BATCH_SIZE,
@@ -69,7 +69,7 @@ def train():
     val_loader = DataLoader(val_set, batch_size=BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True)
 
     # --- 3. MODELLO E OTTIMIZZATORE CON REGOLARIZZAZIONE ---
-    model = RGBD_FusionPredictor_Simple().to(DEVICE)
+    model = RGBD_FusionPredictor().to(DEVICE)
     criterion = ADDLoss().to(DEVICE)
     
     # AGGIUNTO: weight_decay per combattere l'overfitting

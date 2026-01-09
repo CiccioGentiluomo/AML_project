@@ -20,6 +20,17 @@ from utils.rgbd_utils_custom import (
 )
 from utils.rgbd_utils import get_object_metadata, select_detection_for_object
 
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
+
+# Pipeline coerente con l'addestramento
+INFERENCE_TRANSFORM = A.Compose([
+    A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+    ToTensorV2(),
+], additional_targets={'depth': 'mask'})
+
+
+
 
 def get_all_models_info(root_path):
     info_path = os.path.join(root_path, "models", "models_info.yml")
@@ -72,6 +83,20 @@ def project_3d_box(img, R, T, K, obj_info, color=(0, 255, 0), thickness=2):
     edges = [(0, 1), (0, 2), (1, 3), (2, 3), (4, 5), (4, 6), (5, 7), (6, 7), (0, 4), (1, 5), (2, 6), (3, 7)]
     for i, j in edges:
         cv2.line(img, tuple(pts_2d[i]), tuple(pts_2d[j]), color, thickness)
+    return img
+
+def project_model_points(img, R, T, K, points_3d, color=(255, 255, 0)):
+    """ Proietta i punti del modello PLY sull'immagine """
+    # points_3d sono già in metri, T_pred è in mm -> convertiamo tutto in mm per cv2
+    T_vec = T.reshape(3, 1)
+    
+    # Proiezione dei punti
+    pts_2d, _ = cv2.projectPoints(points_3d, R, T_vec, K, None)
+    pts_2d = pts_2d.reshape(-1, 2).astype(int)
+
+    # Disegna ogni punto come un piccolo cerchio
+    for p in pts_2d:
+        cv2.circle(img, tuple(p), 1, color, -1)
     return img
 
 
@@ -166,24 +191,55 @@ def main():
                 print(f"⚠️ Crop non valido (YOLO) per obj {obj_id:02d} sample {sample_id:04d}.")
                 continue
 
-            rgb_tensor = prepare_rgb_tensor(img_bgr, crop_coords)
-            depth_tensor = prepare_depth_tensor(depth_meters, crop_coords)
+            # --- NUOVA LOGICA CORRETTA ---
+            left, top, right, bottom = crop_coords
+
+            # Crop e resize manuale (come nel Dataset)
+            rgb_crop = cv2.resize(img_bgr[top:bottom, left:right], (224, 224))
+            rgb_crop = cv2.cvtColor(rgb_crop, cv2.COLOR_BGR2RGB) # Fondamentale: BGR -> RGB per Albumentations
+
+            depth_crop = cv2.resize(
+                depth_meters[top:bottom, left:right], 
+                (224, 224), 
+                interpolation=cv2.INTER_NEAREST
+            )
+
+            # Applica la trasformazione coerente
+            transformed = INFERENCE_TRANSFORM(image=rgb_crop, depth=depth_crop)
+
+            # Prepara i tensori con le giuste dimensioni (Batch dimension inclusa)
+            rgb_tensor = transformed['image'].unsqueeze(0).to(DEVICE)
+            depth_tensor = transformed['depth'].float().unsqueeze(0).unsqueeze(0).to(DEVICE) # (1, 1, 224, 224)
+
+
             meta_tensor = build_meta_tensor(yolo_bbox, cam_K, img_bgr.shape)
 
             if rgb_tensor is None or depth_tensor is None or meta_tensor is None:
                 print(f"⚠️ Preprocess fallito per obj {obj_id:02d} sample {sample_id:04d}.")
                 continue
 
-            pred_T, pred_R_raw = pose_model(
-                rgb_tensor.to(DEVICE),
-                depth_tensor.to(DEVICE),
-                meta_tensor.to(DEVICE)
-            )
+            # Sostituisci la tua chiamata attuale con questa:
+            pred_T, pred_R_raw = pose_model(rgb_tensor, depth_tensor, meta_tensor.to(DEVICE))
             R_pred = pred_R_raw.view(3, 3).cpu().numpy()
             T_pred = (pred_T[0].cpu().numpy() * 1000.0).astype(np.float32)
 
+
+
             R_gt = np.array(ann['cam_R_m2c'], dtype=np.float32).reshape(3, 3)
             T_gt = np.array(ann['cam_t_m2c'], dtype=np.float32)
+
+
+
+
+            vis_points = img_bgr.copy()
+
+            # 2. Proietta i punti GT (Verdi) e quelli Predetti (Azzurro/Ciano)
+            # pts_model sono i 500 punti campionati che hai già nel codice
+            # ATTENZIONE: se pts_model è in metri, moltiplica per 1000 per cv2.projectPoints
+            pts_mm = pts_model * 1000.0 if pts_model.max() < 10.0 else pts_model
+
+            project_model_points(vis_points, R_gt, T_gt, cam_K, pts_mm, color=(0, 255, 0)) # GT
+            project_model_points(vis_points, R_pred, T_pred, cam_K, pts_mm, color=(255, 255, 0)) # Pred (Giallo)
 
             pts_gt = np.dot(pts_model, R_gt.T) + T_gt
             pts_pred = np.dot(pts_model, R_pred.T) + T_pred
@@ -191,7 +247,7 @@ def main():
             trans_error = float(np.linalg.norm(T_gt - T_pred))
             rot_trace = np.trace(np.dot(R_pred, R_gt.T))
             rot_angle = np.degrees(np.arccos(np.clip((rot_trace - 1.0) / 2.0, -1.0, 1.0)))
-            error_summary = f"ADD {add_error:.2f}mm | dT {trans_error:.2f}mm | dR {rot_angle:.2f} gradi"
+            error_summary = f"ADD {add_error:.2f}mm | dT {trans_error:.2f}mm | dR {rot_angle:.4f} gradi"
             print(f"OBJ {obj_id:02d} sample {sample_id:04d} -> {error_summary}")
 
             vis_img = project_3d_box(
@@ -221,11 +277,8 @@ def main():
                 cv2.putText(vis_img, line, (10, y_pos), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 2, cv2.LINE_AA)
                 cv2.putText(vis_img, line, (10, y_pos), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1, cv2.LINE_AA)
 
-            cv2.imshow(window_name, vis_img)
-            try:
-                cv2.setWindowTitle(window_name, f"{window_name} | {error_summary}")
-            except (cv2.error, AttributeError):
-                pass
+            comparison = np.hstack((vis_img.copy(), vis_points))
+            cv2.imshow("Sinistra: Box | Destra: Point Cloud", comparison)
             if cv2.waitKey(0) & 0xFF == ord('q'):
                 break
 

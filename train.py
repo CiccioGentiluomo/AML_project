@@ -55,6 +55,7 @@ def train():
     WEIGHT_DECAY = 1e-4
     EPOCHS = 50
     FREEZE_EPOCHS = 10
+    EXTRA_EPOCHS_ON_RESUME = 50  # epoche aggiuntive quando si riprende da checkpoint
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     SAVE_PATH_BEST = "pose_resnet50_baseline_best.pth"
@@ -72,14 +73,16 @@ def train():
             "epochs": EPOCHS,
             "batch_size": BATCH_SIZE,
             "freeze_epochs": FREEZE_EPOCHS,
+            "extra_epochs_on_resume": EXTRA_EPOCHS_ON_RESUME,
             "weight_decay": WEIGHT_DECAY,
         },
     )
 
     # --- DATA ---
     train_samples, val_samples, _, gt_cache = prepare_data_and_splits(ROOT_DATASET)
-    train_set = LineModDataset(ROOT_DATASET, train_samples, gt_cache)
-    val_set = LineModDataset(ROOT_DATASET, val_samples, gt_cache)
+    # Abilitiamo augmentation fotometriche sul train; validazione resta pulita.
+    train_set = LineModDataset(ROOT_DATASET, train_samples, gt_cache, augment=True)
+    val_set = LineModDataset(ROOT_DATASET, val_samples, gt_cache, augment=False)
 
     train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=4, pin_memory=True)
     val_loader = DataLoader(val_set, batch_size=BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True)
@@ -93,6 +96,7 @@ def train():
 
     start_epoch = 0
     best_val_loss = float("inf")
+    total_epochs = EPOCHS
 
     if os.path.exists(CHECKPOINT_PATH):
         log_and_print(f"Loading checkpoint from {CHECKPOINT_PATH}...", LOG_FILE)
@@ -115,8 +119,14 @@ def train():
 
         log_and_print(f"Resuming from epoch {start_epoch} (best val loss {best_val_loss:.6f}).", LOG_FILE)
 
+        # Se vogliamo proseguire oltre, aggiungiamo EXTRA_EPOCHS_ON_RESUME al punto di ripartenza
+        total_epochs = start_epoch + EXTRA_EPOCHS_ON_RESUME if EXTRA_EPOCHS_ON_RESUME > 0 else max(EPOCHS, start_epoch)
+
+    else:
+        total_epochs = EPOCHS
+
     # --- LOOP ---
-    for epoch in range(start_epoch, EPOCHS):
+    for epoch in range(start_epoch, total_epochs):
         if epoch >= FREEZE_EPOCHS and not backbone_unfrozen:
             log_and_print("Unfreezing ResNet-50 backbone for fine-tuning...", LOG_FILE)
             backbone_unfrozen = True
@@ -127,7 +137,7 @@ def train():
         train_loss_total = 0.0
         train_deg_total = 0.0
 
-        pbar = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{EPOCHS} [Train]")
+        pbar = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{total_epochs} [Train]")
         for batch in pbar:
             inputs = batch["rgb"].to(DEVICE)
             targets = batch["quaternion"].to(DEVICE)
@@ -169,7 +179,7 @@ def train():
 
         current_lr = optimizer.param_groups[0]["lr"]
         log_and_print(
-            f"Epoch {epoch + 1}/{EPOCHS} | LR {current_lr:.2e} | Train Loss {avg_train_loss:.6f} | Val Loss {avg_val_loss:.6f}",
+            f"Epoch {epoch + 1}/{total_epochs} | LR {current_lr:.2e} | Train Loss {avg_train_loss:.6f} | Val Loss {avg_val_loss:.6f}",
             LOG_FILE,
         )
         log_and_print(

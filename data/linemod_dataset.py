@@ -11,17 +11,30 @@ from utils.resNetUtils import matrix_to_quaternion
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
 
+def _build_transform(augment: bool):
+    base = [
+        transforms.ToTensor(),
+        transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
+    ]
+    if not augment:
+        return transforms.Compose(base)
+
+    aug = [
+        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.1, hue=0.05),
+        transforms.RandomApply([transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 1.5))], p=0.2),
+    ]
+    # RandomErasing lavora su tensori, quindi va dopo ToTensor/Normalize
+    return transforms.Compose(aug + base + [transforms.RandomErasing(p=0.25, scale=(0.02, 0.1), ratio=(0.3, 3.3))])
+
+
 class LineModDataset(Dataset):
-    def __init__(self, dataset_root, samples, gt_cache, img_size=(224, 224)):
+    def __init__(self, dataset_root, samples, gt_cache, img_size=(224, 224), augment=False):
         self.dataset_root = dataset_root
         self.samples = samples      # Lista di (obj_id, img_id)
         self.gt_cache = gt_cache    # Cache dei GT
         self.img_size = img_size
         
-        self.transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD)
-        ])
+        self.transform = _build_transform(augment)
 
     def __len__(self):
         return len(self.samples)

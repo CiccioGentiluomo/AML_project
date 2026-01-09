@@ -51,7 +51,6 @@ def train():
     wandb.init(
         project="linemod-pose-estimation",
         name="rerun augmented Custom ResNet-10 7x7 maxPool CNN",
-        id="hesy8f5i",
         resume="allow",
         config={
             "learning_rate": LEARNING_RATE,

@@ -41,19 +41,22 @@ def train():
     SAVE_PATH_BEST = "pose_rgbd_fusion_best.pth"
     CHECKPOINT_PATH = "pose_rgbd_checkpoint.pth"
     LOG_FILE = f"train_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+    N_POINTS = 500  # Numero di punti del modello da campionare
     
-    SYMMETRIC_OBJECTS = {10, 11} 
 
     # Inizializza wandb
     wandb.init(
         project="linemod-pose-estimation",
+        name="RGBD_augmentation",
+        resume="allow",
         config={
             "learning_rate": LEARNING_RATE,
             "architecture": "RGBD_FusionPredictor",
             "dataset": "LineMod_RGBD",
             "epochs": EPOCHS,
             "batch_size": BATCH_SIZE,
-            "weight_decay": 1e-4
+            "weight_decay": 1e-4,
+            "n_points": N_POINTS,
         }
     )
 
@@ -62,8 +65,8 @@ def train():
     object_ids = sorted(gt_cache.keys())
     info_cache = load_info_cache(ROOT_DATASET, object_ids)
     
-    train_set = LineModDatasetRGBD(ROOT_DATASET, train_samples, gt_cache, info_cache)
-    val_set = LineModDatasetRGBD(ROOT_DATASET, val_samples, gt_cache, info_cache)
+    train_set = LineModDatasetRGBD(ROOT_DATASET, train_samples, gt_cache, info_cache, n_points=N_POINTS, is_train=True)
+    val_set = LineModDatasetRGBD(ROOT_DATASET, val_samples, gt_cache, info_cache, n_points=N_POINTS, is_train=False)
 
     train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=4, pin_memory=True)
     val_loader = DataLoader(val_set, batch_size=BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True)

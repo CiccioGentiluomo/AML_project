@@ -22,10 +22,8 @@ class LineModDatasetRGBD_custom(Dataset):
         # --- PIPELINE DI AUGMENTATION (SOLO FOTOMETRICA) ---
         self.transform = A.Compose([
             # 1. Trasformazioni solo per RGB
-            A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.5),
-            A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1, p=0.5),
-            A.GaussianBlur(blur_limit=(3, 5), p=0.3),
-            A.GaussNoise(std_range=(0.04, 0.12), p=0.3),
+            A.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.05, p=0.3),
+            A.GaussNoise(std_range=(0.01, 0.03), p=0.2),
             A.Normalize(
                 mean=(0.485, 0.456, 0.406), 
                 std=(0.229, 0.224, 0.225)
@@ -37,7 +35,7 @@ class LineModDatasetRGBD_custom(Dataset):
         self.val_transform = A.Compose([
             A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
             ToTensorV2(),
-        ])
+        ], additional_targets={'depth': 'mask'})
 
         self.model_points_cache = {}
         unique_obj_ids = sorted({obj_id for obj_id, _ in samples})
@@ -64,9 +62,12 @@ class LineModDatasetRGBD_custom(Dataset):
         info = self.info_cache[obj_id][img_id]
         
         rgb_img = cv2.imread(os.path.join(self.dataset_root, 'data', f"{obj_id:02d}", 'rgb', f"{img_id:04d}.png"))
-        rgb_img = cv2.cvtColor(rgb_img, cv2.COLOR_BGR2RGB) # Convertiamo subito in RGB
-
         depth_raw = cv2.imread(os.path.join(self.dataset_root, 'data', f"{obj_id:02d}", 'depth', f"{img_id:04d}.png"), cv2.IMREAD_UNCHANGED)
+
+        if rgb_img is None or depth_raw is None:
+            raise FileNotFoundError(f"Immagini mancanti per obj {obj_id} img {img_id}")
+
+        rgb_img = cv2.cvtColor(rgb_img, cv2.COLOR_BGR2RGB) # Convertiamo subito in RGB
         depth_meters = convert_depth_to_meters(depth_raw, info['depth_scale'])
 
         crop_coords = square_crop_coords(ann['obj_bb'], rgb_img.shape)
@@ -76,17 +77,12 @@ class LineModDatasetRGBD_custom(Dataset):
         rgb_crop = cv2.resize(rgb_img[top:bottom, left:right], self.img_size)
         depth_crop = cv2.resize(depth_meters[top:bottom, left:right], self.img_size, interpolation=cv2.INTER_NEAREST)
 
-        if self.is_train:
-            # APPLICA AUGMENTATION
-            augmented = self.transform(image=rgb_crop, depth=depth_crop)
-            rgb_tensor = augmented['image']
-            depth_tensor = augmented['depth'].float().unsqueeze(0) # Aggiunge canale 1
-        else:
-            # SOLO CONVERSIONE IN TENSOR (Normalizzazione inclusa se necessario)
-            # Nota: Per coerenza puoi usare ToTensorV2() anche qui in una pipeline separata
-            augmented = self.val_transform(image=rgb_crop, depth=depth_crop)
-            rgb_tensor = torch.from_numpy(rgb_crop).permute(2, 0, 1).float() / 255.0
-            depth_tensor = torch.from_numpy(depth_crop).float().unsqueeze(0)
+        t = self.transform if self.is_train else self.val_transform
+        
+        # 2. APPLICA QUELLA SELEZIONATA
+        augmented = t(image=rgb_crop, depth=depth_crop)
+        rgb_tensor = augmented['image']
+        depth_tensor = augmented['depth'].float().unsqueeze(0)
 
         meta_tensor = build_meta_tensor(ann['obj_bb'], np.array(info['cam_K'], dtype=np.float32).reshape(3, 3), rgb_img.shape).squeeze(0)
 

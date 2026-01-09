@@ -4,6 +4,8 @@ import os
 import numpy as np
 import cv2 
 import trimesh
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
 
 from utils.rgbd_utils import (
     convert_depth_to_meters,
@@ -14,14 +16,33 @@ from utils.rgbd_utils import (
 )
 
 class LineModDatasetRGBD(Dataset):
-    def __init__(self, dataset_root, samples, gt_cache, info_cache, img_size=(224, 224), n_points=500):
+    def __init__(self, dataset_root, samples, gt_cache, info_cache, img_size=(224, 224), n_points=500, is_train=False):
         self.dataset_root = dataset_root
         self.samples = samples      # Lista di (obj_id, img_id)
         self.gt_cache = gt_cache    # Cache caricata da gt.yml
         self.info_cache = info_cache # Cache caricata da info.yml
         self.img_size = img_size
         self.n_points = n_points
+        self.is_train = is_train
+
+        # --- PIPELINE DI AUGMENTATION (SOLO FOTOMETRICA) ---
+        self.transform = A.Compose([
+            # 1. Trasformazioni solo per RGB
+            A.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.05, p=0.3),
+            A.GaussNoise(std_range=(0.01, 0.03), p=0.2),
+            A.Normalize(
+                mean=(0.485, 0.456, 0.406), 
+                std=(0.229, 0.224, 0.225)
+            ),
+            ToTensorV2(),
+        ], additional_targets={'depth': 'mask'})
         
+        # Crea anche una pipeline "semplice" per la validazione/test
+        self.val_transform = A.Compose([
+            A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+            ToTensorV2(),
+        ], additional_targets={'depth': 'mask'})
+
         # --- CACHE DEI MODELLI 3D ---
         # Pre-carichiamo i punti per ogni oggetto per non leggere il disco ogni volta
         self.model_points_cache = {}
@@ -68,20 +89,38 @@ class LineModDatasetRGBD(Dataset):
         rgb_path = os.path.join(self.dataset_root, 'data', obj_folder, 'rgb', img_name)
         depth_path = os.path.join(self.dataset_root, 'data', obj_folder, 'depth', img_name)
         
-        # 4. Processamento Profondità (Depth)
-        depth_img_raw = cv2.imread(depth_path, cv2.IMREAD_UNCHANGED)
         rgb_img = cv2.imread(rgb_path)
-        if depth_img_raw is None or rgb_img is None:
+        depth_img_raw = cv2.imread(depth_path, cv2.IMREAD_UNCHANGED)
+
+        if rgb_img is None or depth_img_raw is None:
             raise FileNotFoundError(f"Immagini mancanti per obj {obj_id} img {img_id}")
+
+        rgb_img = cv2.cvtColor(rgb_img, cv2.COLOR_BGR2RGB) # Albumentations lavora in RGB
+        
         depth_meters = convert_depth_to_meters(depth_img_raw, depth_scale)
 
         # 6. Logica Square Crop
         crop_coords = square_crop_coords([x, y, w, h], rgb_img.shape)
-        if crop_coords is None:
-            raise ValueError(f"Crop non valido per obj {obj_id} img {img_id}")
+        l, t, r, b = crop_coords
+        
+        rgb_crop = rgb_img[t:b, l:r]
+        depth_crop = depth_meters[t:b, l:r]
 
-        rgb_tensor = prepare_rgb_tensor(rgb_img, crop_coords).squeeze(0)
-        depth_tensor = prepare_depth_tensor(depth_meters, crop_coords).squeeze(0)
+        # 4. Resize manuale a dimensione target per Albumentations
+        rgb_crop = cv2.resize(rgb_crop, self.img_size, interpolation=cv2.INTER_LINEAR)
+        depth_crop = cv2.resize(depth_crop, self.img_size, interpolation=cv2.INTER_NEAREST)
+
+        # 5. APPLICAZIONE AUGMENTATION
+        t = self.transform if self.is_train else self.val_transform
+        
+        # 2. APPLICA QUELLA SELEZIONATA
+        augmented = t(image=rgb_crop, depth=depth_crop)
+        # Passiamo depth come 'mask' per far sì che Albumentations la tratti correttamente
+
+        rgb_tensor = augmented['image']
+        # Albumentations non aggiunge la dimensione del canale alla maschera/depth, lo facciamo noi
+        depth_tensor = augmented['depth'].unsqueeze(0).float()
+
 
         meta_tensor = build_meta_tensor([x, y, w, h], K, rgb_img.shape)
         meta_info = meta_tensor.squeeze(0)

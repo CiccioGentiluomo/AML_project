@@ -50,7 +50,8 @@ def train():
     # Inizializza wandb con i metadati della nuova architettura
     wandb.init(
         project="linemod-pose-estimation",
-        name="Custom ResNet-10 7x7 maxPool CNN",
+        name="rerun augmented Custom ResNet-10 7x7 maxPool CNN",
+        id="hesy8f5i",
         resume="allow",
         config={
             "learning_rate": LEARNING_RATE,
@@ -69,8 +70,8 @@ def train():
     info_cache = load_info_cache(ROOT_DATASET, object_ids)
     
     # Carichiamo il dataset custom che gestisce nativamente il canale singolo
-    train_set = LineModDatasetRGBD_custom(ROOT_DATASET, train_samples, gt_cache, info_cache, n_points=N_POINTS)
-    val_set = LineModDatasetRGBD_custom(ROOT_DATASET, val_samples, gt_cache, info_cache, n_points=N_POINTS)
+    train_set = LineModDatasetRGBD_custom(ROOT_DATASET, train_samples, gt_cache, info_cache, n_points=N_POINTS, is_train=True)
+    val_set = LineModDatasetRGBD_custom(ROOT_DATASET, val_samples, gt_cache, info_cache, n_points=N_POINTS, is_train=False)
 
     train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=4, pin_memory=True)
     val_loader = DataLoader(val_set, batch_size=BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True)

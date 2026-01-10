@@ -6,6 +6,17 @@ import yaml
 import trimesh
 import pandas as pd
 from tqdm import tqdm
+# 1. Aggiungi Albumentations agli import
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
+
+# 2. Definisci la pipeline di inferenza (identica alla val_transform del dataset)
+inference_transform = A.Compose([
+    A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+    ToTensorV2(),
+], additional_targets={'depth': 'mask'})
+
+
 
 #from models.RGBD_FusionPredictor_custom import RGBD_FusionPredictor_custom
 from models.FusionResNetCustom import RGBD_FusionPredictor_custom
@@ -88,16 +99,23 @@ def generate_fusion_report(test_samples, gt_cache, info_cache, model, models_inf
                 invalid_samples += 1
                 continue
 
-            rgb_tensor = prepare_rgb_tensor(img_bgr, crop_coords)
-            depth_tensor = prepare_depth_tensor(depth_meters, crop_coords)
-            meta_tensor = build_meta_tensor(bbox, cam_K, img_bgr.shape)
-            if rgb_tensor is None or depth_tensor is None or meta_tensor is None:
-                invalid_samples += 1
-                continue
+            # Ritaglio e resize manuale come nel dataset
+            left, top, right, bottom = crop_coords
+            rgb_crop = cv2.resize(img_bgr[top:bottom, left:right], (224, 224))
+            rgb_crop = cv2.cvtColor(rgb_crop, cv2.COLOR_BGR2RGB) # Fondamentale: BGR -> RGB
+            
+            depth_crop = cv2.resize(depth_meters[top:bottom, left:right], (224, 224), interpolation=cv2.INTER_NEAREST)
 
-            rgb = rgb_tensor.to(device)
-            depth = depth_tensor.to(device)
-            meta = meta_tensor.to(device)
+            # Applica la trasformazione di inferenza
+            transformed = inference_transform(image=rgb_crop, depth=depth_crop)
+            
+            rgb = transformed['image'].unsqueeze(0).to(device) # Aggiunge batch dimension
+            depth = transformed['depth'].float().unsqueeze(0).unsqueeze(0).to(device) # (1, 1, 224, 224)
+            
+            # Meta tensor rimane quello di prima
+            meta = build_meta_tensor(bbox, cam_K, img_bgr.shape).to(device)
+
+
 
             pred_T, pred_R_raw = model(rgb, depth, meta)
             R_pred = pred_R_raw.view(3, 3).cpu().numpy()

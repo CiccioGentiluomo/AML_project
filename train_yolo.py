@@ -15,7 +15,7 @@ def parse_opt():
     parser.add_argument('--save_dir', type=str, default='runs/detect', help='Cartella dove salvare i pesi e i log')
     
     # Iperparametri di Training
-    parser.add_argument('--epochs', type=int, default=10, help='Numero totale di epoche')
+    parser.add_argument('--epochs', type=int, default=50, help='Numero totale di epoche')
     parser.add_argument('--batch', type=int, default=32, help='Dimensione del batch (riduci se GPU OOM)')
     parser.add_argument('--imgsz', type=int, default=640, help='Dimensione immagini (pixel)')
     parser.add_argument('--workers', type=int, default=4, help='Numero di workers per il dataloader')

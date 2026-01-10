@@ -115,12 +115,17 @@ class LineModDatasetRGBD(Dataset):
         
         # 2. APPLICA QUELLA SELEZIONATA
         augmented = t(image=rgb_crop, depth=depth_crop)
-        # Passiamo depth come 'mask' per far sì che Albumentations la tratti correttamente
-
+        
         rgb_tensor = augmented['image']
-        # Albumentations non aggiunge la dimensione del canale alla maschera/depth, lo facciamo noi
-        depth_tensor = augmented['depth'].unsqueeze(0).float()
+        depth_tensor = augmented['depth']
 
+        if torch.is_tensor(depth_tensor):
+            depth_np = depth_tensor.cpu().numpy()
+        else:
+            depth_np = depth_tensor
+
+        depth_3ch = np.repeat(depth_np[np.newaxis, :, :], 3, axis=0)
+        depth_tensor = torch.from_numpy(depth_3ch).float()
 
         meta_tensor = build_meta_tensor([x, y, w, h], K, rgb_img.shape)
         meta_info = meta_tensor.squeeze(0)

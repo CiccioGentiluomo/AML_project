@@ -1,3 +1,4 @@
+#train baseline RGB model
 import math
 import os
 from datetime import datetime

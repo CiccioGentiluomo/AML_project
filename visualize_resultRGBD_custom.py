@@ -7,7 +7,10 @@ import yaml
 import trimesh
 from ultralytics import YOLO
 
+#from models.RGBD_FusionPredictor_custom import RGBD_FusionPredictor_custom
 from models.FusionResNetCustom import RGBD_FusionPredictor_custom
+
+
 from data.split import prepare_data_and_splits
 from utils.rgbd_utils_custom import (
     load_info_cache,

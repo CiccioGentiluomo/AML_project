@@ -10,9 +10,13 @@ from datetime import datetime
 import wandb
 import numpy as np
 
-# Import dai nuovi file dedicati alla versione custom
+#use this if you want to use 5-CNN
 #from models.RGBD_FusionPredictor_custom import RGBD_FusionPredictor_custom
+
+#use this if you want to use the custom ResNet-10
 from models.FusionResNetCustom import RGBD_FusionPredictor_custom
+
+
 from data.LineModDatasetRGBD_custom import LineModDatasetRGBD_custom
 from utils.add_loss import ADDLoss
 from data.split import prepare_data_and_splits
